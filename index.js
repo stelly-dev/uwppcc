@@ -602,14 +602,9 @@ const patch = (oldVNode, newVNode) => {
 };
 const renderVdom = (hostRef, renderFnResults) => {
     const hostElm = hostRef.$hostElement$;
-    const cmpMeta = hostRef.$cmpMeta$;
     const oldVNode = hostRef.$vnode$ || newVNode(null, null);
     const rootVnode = isHost(renderFnResults) ? renderFnResults : h(null, null, renderFnResults);
     hostTagName = hostElm.tagName;
-    if (cmpMeta.$attrsToReflect$) {
-        rootVnode.$attrs$ = rootVnode.$attrs$ || {};
-        cmpMeta.$attrsToReflect$.map(([propName, attribute]) => (rootVnode.$attrs$[attribute] = hostElm[propName]));
-    }
     rootVnode.$tag$ = null;
     rootVnode.$flags$ |= 4 /* isHost */;
     hostRef.$vnode$ = rootVnode;
@@ -951,9 +946,6 @@ const proxyComponent = (Cstr, cmpMeta, flags) => {
                 .map(([propName, m]) => {
                 const attrName = m[1] || propName;
                 attrNameToPropName.set(attrName, propName);
-                if (m[0] & 512 /* ReflectAttr */) {
-                    cmpMeta.$attrsToReflect$.push([propName, attrName]);
-                }
                 return attrName;
             });
         }
@@ -1067,9 +1059,6 @@ const proxyCustomElement = (Cstr, compactMeta) => {
     }
     {
         cmpMeta.$listeners$ = compactMeta[3];
-    }
-    {
-        cmpMeta.$attrsToReflect$ = [];
     }
     Object.assign(Cstr.prototype, {
         __registerHost() {
@@ -1538,9 +1527,9 @@ const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"conta
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
 const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal"]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1537,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
-const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1025],"test":[4]}]);
+const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
 const SelectedCourses = /*@__PURE__*/proxyCustomElement(SelectedCourses$1, [1,"selected-courses",{"courses":[16],"coursesState":[32]}]);
 const defineCustomElements = (opts) => {
