@@ -1160,9 +1160,18 @@ const ChosenGroups$1 = class extends H {
     this.__attachShadow();
     this.courses = [];
     this.test = false;
+    this.subSets = '[]';
     this.renderChosenGroups = () => {
-      return this.courses.map(course => (h("li", { class: "chosen-groups_item" }, h("span", { class: "chosen-groups_item-name" }, course.badge_desc), h("span", { class: "chosen-groups_item-count" }, course.number_held))));
+      return this.parseSubSets(this.subSets).map(course => (h("li", { class: "chosen-groups_item" }, h("span", { class: "chosen-groups_item-name" }, course.badge_desc), h("span", { class: "chosen-groups_item-count" }, course.number_held))));
     };
+  }
+  parseSubSets(newValue) {
+    try {
+      return JSON.parse(newValue);
+    }
+    catch (error) {
+      throw new Error('failed to parse badges attribute - ' + error.message);
+    }
   }
   render() {
     return (h(Host, null, h("ul", { class: "chosen-groups_container" }, this.renderChosenGroups(), this.test ? h("li", { class: "chosen-groups_item" }, h("span", { class: "chosen-groups_item-name" }, "Test"), h("span", { class: "chosen-groups_item-count" }, "1")) : null)));
@@ -1251,6 +1260,7 @@ const PioneerProjectApp$1 = class extends H {
     this.__registerHost();
     this.__attachShadow();
     this.queryResults = '[]';
+    this.subSets = '[]';
     this.searchLoading = false;
     this.searchResults = [];
     this.courses = [];
@@ -1277,7 +1287,7 @@ const PioneerProjectApp$1 = class extends H {
     this.handleClearSearch();
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", null), h("contact-groups", null)), h("email-modal", null)));
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.subSets }), h("contact-groups", null)), h("email-modal", null)));
   }
   static get style() { return pioneerProjectAppCss; }
 };
@@ -1512,12 +1522,12 @@ const SelectedCourses$1 = class extends H {
   static get style() { return selectedCoursesCss; }
 };
 
-const ChosenGroups = /*@__PURE__*/proxyCustomElement(ChosenGroups$1, [1,"chosen-groups",{"courses":[16],"test":[4]}]);
+const ChosenGroups = /*@__PURE__*/proxyCustomElement(ChosenGroups$1, [1,"chosen-groups",{"courses":[16],"test":[4],"subSets":[1,"sub-sets"]}]);
 const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"contact-groups"]);
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
 const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal"]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1,"query-results"],"loaderSrc":[1,"loader-src"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
 const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
