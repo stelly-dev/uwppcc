@@ -1508,12 +1508,17 @@ const SelectedCourses$1 = class extends H {
     super();
     this.__registerHost();
     this.__attachShadow();
+    this.badgeAdded = createEvent(this, "badge-added", 7);
     this.coursesState = [];
     this.renderCourses = () => {
       //  return this.courses.map(course => (
       //  <course-card course={course} key={course._id}></course-card>
       //  ))
+      this.handleBadgeAdded();
       return this.courses.map(course => h("course-card", { course: course }));
+    };
+    this.handleBadgeAdded = () => {
+      this.badgeAdded.emit(JSON.stringify(this.courses));
     };
   }
   render() {
