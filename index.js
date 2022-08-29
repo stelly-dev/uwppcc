@@ -1263,12 +1263,18 @@ const PioneerProjectApp$1 = class extends H {
     this.handleRemoveCourse = (course) => {
       this.courses = this.courses.filter(c => c._id !== course._id);
     };
+    this.handleClearSearch = () => {
+      this.queryResults = '[]';
+    };
   }
   addCourse(event) {
     this.handleAddCourse(event.detail);
   }
   removeCourse(event) {
     this.handleRemoveCourse(event.detail);
+  }
+  clearSearch() {
+    this.handleClearSearch();
   }
   render() {
     return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", null), h("contact-groups", null)), h("email-modal", null)));
@@ -1284,6 +1290,7 @@ const SearchBar$1 = class extends H {
     this.__registerHost();
     this.__attachShadow();
     this.badgeSearch = createEvent(this, "badge-search", 7);
+    this.clearSearch = createEvent(this, "clear-search", 7);
     // we can't bundle assets with the component, so we use getAssetPath here 
     // just for local development
     this.renderLoader = () => {
@@ -1292,7 +1299,7 @@ const SearchBar$1 = class extends H {
     };
     this.renderClearButton = () => {
       return (this.query && this.query.length > 1 && !this.loading ?
-        (h("div", { class: "search-bar__clear", onClick: () => this.query = '' }, h("svg", { "data-bbox": "5.5 5.5 49 49", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 60 60" }, h("g", null, h("path", { d: "M54.5 47.9L36.5 30l18-17.9-6.6-6.6-17.9 18-17.9-18-6.6 6.6 18 17.9-18 17.9 6.6 6.6 17.9-18 17.9 18 6.6-6.6z" }))))) : null);
+        (h("div", { class: "search-bar__clear", onClick: () => this.handleClearSearch() }, h("svg", { "data-bbox": "5.5 5.5 49 49", xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 60 60" }, h("g", null, h("path", { d: "M54.5 47.9L36.5 30l18-17.9-6.6-6.6-17.9 18-17.9-18-6.6 6.6 18 17.9-18 17.9 6.6 6.6 17.9-18 17.9 18 6.6-6.6z" }))))) : null);
     };
     this.badgeSearchHandler = (search) => {
       this.badgeSearch.emit(search);
@@ -1303,6 +1310,10 @@ const SearchBar$1 = class extends H {
       if (this.query.length > 2) {
         this.badgeSearchHandler(this.query);
       }
+    };
+    this.handleClearSearch = () => {
+      this.clearSearch.emit();
+      this.query = '';
     };
   }
   // add search bar
@@ -1506,7 +1517,7 @@ const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"conta
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
 const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal"]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1,"query-results"],"loaderSrc":[1,"loader-src"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1,"query-results"],"loaderSrc":[1,"loader-src"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
 const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
@@ -1532,5 +1543,4 @@ const defineCustomElements = (opts) => {
   }
 };
 
-defineCustomElements(); 
-
+defineCustomElements();
