@@ -1,3 +1,4 @@
+import '@babel/polyfill'
 const NAMESPACE = 'pioneer-project';
 
 let scopeId;
@@ -1531,5 +1532,7 @@ const defineCustomElements = (opts) => {
     });
   }
 };
+
+defineCustomElements(); 
 
 export { ChosenGroups, ContactGroups, CourseCard, EmailModal, GroupCard, PioneerProjectApp, SearchBar, SearchResultRepeater, SearchResultRepeaterItem, SelectedCourses, defineCustomElements, setAssetPath, setPlatformOptions };
