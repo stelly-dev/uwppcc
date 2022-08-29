@@ -1298,7 +1298,7 @@ const PioneerProjectApp$1 = class extends H {
     this.handleClearSearch();
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { test: true, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.subSets }), h("contact-groups", null)), h("email-modal", null)));
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.subSets }), h("contact-groups", null)), h("email-modal", null)));
   }
   static get style() { return pioneerProjectAppCss; }
 };
