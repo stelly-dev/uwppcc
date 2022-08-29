@@ -1298,7 +1298,7 @@ const PioneerProjectApp$1 = class extends H {
     this.handleClearSearch();
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.subSets }), h("contact-groups", null)), h("email-modal", null)));
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { test: true, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.subSets }), h("contact-groups", null)), h("email-modal", null)));
   }
   static get style() { return pioneerProjectAppCss; }
 };
@@ -1540,7 +1540,7 @@ const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
 const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1537,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
-const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
+const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1025],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
 const SelectedCourses = /*@__PURE__*/proxyCustomElement(SelectedCourses$1, [1,"selected-courses",{"courses":[16],"coursesState":[32]}]);
 const defineCustomElements = (opts) => {
