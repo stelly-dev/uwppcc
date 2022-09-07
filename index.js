@@ -666,6 +666,11 @@ const dispatchHooks = (hostRef, isInitialLoad) => {
     const endSchedule = createTime('scheduleUpdate', hostRef.$cmpMeta$.$tagName$);
     const instance = elm;
     let promise;
+    if (isInitialLoad) {
+        {
+            promise = safeCall(instance, 'componentWillLoad');
+        }
+    }
     endSchedule();
     return then(promise, () => updateComponent(hostRef, instance, isInitialLoad));
 };
@@ -1151,36 +1156,51 @@ const flush = () => {
 const nextTick = /*@__PURE__*/ (cb) => promiseResolve().then(cb);
 const writeTask = /*@__PURE__*/ queueTask(queueDomWrites, true);
 
-const chosenGroupsCss = ":host{display:block}";
+const chosenGroupsCss = ":host{display:block;margin-top:2rem}.group-list{list-style:none;padding:0;margin:0}";
 
 const ChosenGroups$1 = class extends H {
   constructor() {
     super();
     this.__registerHost();
     this.__attachShadow();
-    this.courses = [];
-    this.test = false;
-    this.subSets = [];
-    this.renderChosenGroups = () => {
-      return this.subSets.map(course => (h("li", { class: "chosen-groups_item" }, h("span", { class: "chosen-groups_item-name" }, course.badge_desc), h("span", { class: "chosen-groups_item-count" }, course.number_held))));
-    };
+  }
+  handleAddGroup(group) {
+    console.log('add group', group);
+  }
+  renderItems() {
+    return this.subSets.map((group) => {
+      return (h("li", { class: "group-list_item" }, h("subset-card", { group: group })));
+    });
   }
   render() {
-    return (h(Host, null, h("ul", { class: "chosen-groups_container" }, this.renderChosenGroups(), this.test ? h("li", { class: "chosen-groups_item" }, h("span", { class: "chosen-groups_item-name" }, "Test"), h("span", { class: "chosen-groups_item-count" }, "1")) : null)));
+    return (h(Host, null, h("ul", { class: "group-list" }, this.renderItems())));
   }
   static get style() { return chosenGroupsCss; }
 };
 
-const contactGroupsCss = ":host {\n  display: block;\n}\n\nx";
+const contactGroupsCss = ":host{display:block}.group-list_item{list-style:none}.group-list{margin:0;padding:0}.contact-group{padding:0 0 1rem 0;background-color:transparent;border-radius:10px;border:1px solid #eafffd19;position:relative;min-height:60px}.edit-button{position:absolute;top:100%;right:0;transform:translate(-50%, -50%);border-radius:50%;border:none;background-color:#2633a2;fill:white;cursor:pointer;width:50px;height:50px;display:flex;justify-content:center;align-items:center;transition:all 0.2s ease-in-out}.edit-button:hover{background-color:white;fill:black}.edit-button:active{transform:translate(-50%,-50%) scale(0.9)}.edit-button svg{width:40px;height:40px}.empty-message{text-align:center;font-size:1.5rem;color:#909090a2;font-family:sans-serif;font-size:1.25rem;max-width:80%;margin:0 auto;font-weight:700;padding:1rem}";
 
 const ContactGroups$1 = class extends H {
   constructor() {
     super();
     this.__registerHost();
     this.__attachShadow();
+    this.openEditor = createEvent(this, "openEditor", 7);
+    this.subSets = [];
+    this.renderCards = () => {
+      return this.subSets.map((group) => {
+        return (h("li", { class: "group-list_item" }, h("subset-card", { group: group })));
+      });
+    };
+  }
+  handleOpenEditor(e) {
+    this.openEditor.emit(e);
+  }
+  renderEditButton() {
+    return (h("button", { class: "edit-button", onClick: (e) => this.handleOpenEditor(e) }, h("svg", { "data-bbox": "25.783 11.712 137 160", viewBox: "0 0 200 200", height: "200", width: "200", xmlns: "http://www.w3.org/2000/svg", "data-type": "shape" }, h("g", null, h("path", { d: "M156.775 29.949l-18.59-14.806c-6.844-5.451-16.77-4.281-22.174 2.614L25.783 131.512l4.798 40.2 39.795-4.802 89.009-114.607c5.405-6.895 4.236-16.904-2.61-22.354zM39.224 160.475l-2.809-24.062 26.756 21.239-23.947 2.823zm30.763-13.734L45.4 127.223l82.297-105.667 25.336 20.166-83.046 105.019z", "clip-rule": "evenodd", "fill-rule": "evenodd" })))));
   }
   render() {
-    return (h(Host, null, h("slot", null)));
+    return (h(Host, null, h("section", { class: "contact-group" }, h("ul", { class: "group-list" }, this.subSets.length > 0 ? this.renderCards() : h("p", { class: "empty-message" }, "Selected sets of students will appear here")), this.renderEditButton())));
   }
   static get style() { return contactGroupsCss; }
 };
@@ -1216,16 +1236,36 @@ const CourseCard$1 = class extends H {
   static get style() { return courseCardCss; }
 };
 
-const emailModalCss = ":host{display:block}";
+const emailModalCss = ":host{display:block}.mouse-trap{position:fixed;top:0;left:0;width:100%;height:100%;z-index:1000;background:rgba(0, 0, 0, 0.5);cursor:pointer}.email-modal{position:fixed;top:50%;left:50%;transform:translate(-50%, -50%);width:500px;height:500px;background:#fff;border-radius:15px;padding:1rem;z-index:1001;display:flex;flex-direction:column;justify-content:center;align-items:center;background:#232323}.email-form{display:grid;grid-template-columns:repeat(12, 1fr);grid-template-rows:repeat(12, 1fr);grid-gap:1rem;width:100%;height:100%;position:relative;margin-top:1rem;margin-bottom:1rem}.close-button{position:absolute;top:0;right:0;width:2rem;height:2rem;border-radius:50%;display:flex;justify-content:center;align-items:center;cursor:pointer;fill:white;background:#232323;border:none}.close-button:focus{fill:orangered}.return-address{grid-column:1 / 13;grid-row:1 / 1;display:flex;flex-direction:column}.sender-name{grid-column:1 / 13;grid-row:2 / 2;display:flex;flex-direction:column}label{font-size:0.8rem;font-family:'Cubano';color:orangered}input,textarea{background:#565656;border:none;color:white;padding:.5rem;font-size:16px;margin-top:.5rem;border-radius:3px}input:focus{outline:2px solid orangered}textarea:focus{outline:1px solid orangered}.email-body{display:flex;flex-direction:column;grid-column:1 / 13;grid-row:3 / 11;max-width:100%;max-height:100%;resize:none}.email-body>textarea{height:100%;resize:none;font-family:'Roboto', sans-serif;padding:.5rem}.send-button{grid-column:10 / 13;grid-row:11 / 13;border-radius:3rem;max-height:50%;margin-top:calc(25% / 2);cursor:pointer;outline:none;border:none;font-family:'Cubano';transition:all cubic-bezier(0.165, 0.84, 0.44, 1) 0.3s}.send-button:focus{outline:3px solid orangered}.send-button:hover{background:orangered;color:white}";
 
 const EmailModal$1 = class extends H {
   constructor() {
     super();
     this.__registerHost();
     this.__attachShadow();
+    this.mouseTrapClick = createEvent(this, "mouseTrapClick", 7);
+    this.sendEmail = createEvent(this, "sendEmail", 7);
+    this.returnAddress = '';
+    this.message = '';
+    this.name = '';
+    this.open = false;
+    this.handleInputChange = (event) => {
+      const { name, value } = event.target;
+      this[name] = value;
+    };
+    this.mouseTrapClickHandler = (event) => {
+      this.mouseTrapClick.emit(event);
+    };
+    this.sendEmailHandler = () => {
+      this.sendEmail.emit({
+        returnEmail: this.returnAddress,
+        message: this.message,
+        name: this.name,
+      });
+    };
   }
   render() {
-    return (h(Host, null, h("slot", null)));
+    return (this.open ? h(Host, null, h("aside", { class: "email-modal" }, h("button", { class: "close-button", onClick: this.mouseTrapClickHandler }, h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", width: "24", height: "24" }, h("path", { fill: "none", d: "M0 0h24v24H0z" }), h("path", { d: "M13.414 12l5.293 5.293-1.414 1.414-5.293-5.293-5.293 5.293-1.414-1.414L10.586 12 5.293 6.707l1.414-1.414L12 10.586l5.293-5.293 1.414 1.414L13.414 12z" }))), h("div", { class: "email-form" }, h("label", { htmlFor: "returnAddress", class: "return-address" }, "Your Email Address", h("input", { type: "email", onChange: (e) => this.handleInputChange(e), name: "returnAddress", value: this.returnAddress, placeholder: "Enter your email address", required: true })), h("label", { htmlFor: "name", class: "sender-name" }, "Your Name", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), name: "name", value: this.name, placeholder: "Enter your name", required: true })), h("label", { htmlFor: "message", class: "email-body" }, "Message For Badge Holders", h("textarea", { onChange: (e) => this.handleInputChange(e), name: "message", value: this.message, placeholder: 'write you message here', required: true })), h("button", { class: "send-button", onClick: () => this.sendEmailHandler() }, "send"))), h("div", { class: "mouse-trap", onClick: (e) => this.mouseTrapClickHandler(e) })) : null);
   }
   static get style() { return emailModalCss; }
 };
@@ -1244,7 +1284,7 @@ const GroupCard$1 = class extends H {
   static get style() { return groupCardCss; }
 };
 
-const pioneerProjectAppCss = ":root{--cap-fill:blue}:host{display:grid;grid-template-columns:1fr 1fr;grid-gap:calc(20px + 2rem);grid-template-rows:repeat(auto-fill, minmax(calc(100px + 1rem), 1fr));padding:1rem;width:980px;border:1px solid white;height:100vh;box-sizing:border-box}.section_search{grid-column:1 / span 1;grid-row:1 / span 6;background:#050108;border-radius:15px;padding:1rem;height:100%;width:100%}";
+const pioneerProjectAppCss = ":root{--cap-fill:blue}:host{display:grid;grid-template-columns:1fr 1fr;grid-gap:calc(1rem);grid-template-rows:repeat(auto-fill, minmax(calc(100px + 1rem), 1fr));width:980px;height:100vh;box-sizing:border-box}.section_search{grid-area:1 / 1 / span 8 / span 1;background:#050108;border-radius:15px;padding:1rem}.section_selections{grid-area:1 / 2 / span 8 / span 1;border-radius:15px;padding:0 1rem 1rem 0;display:flex;flex-direction:column}.section_selections>*{margin-bottom:1rem}";
 
 const PioneerProjectApp$1 = class extends H {
   constructor() {
@@ -1256,6 +1296,8 @@ const PioneerProjectApp$1 = class extends H {
     this.searchLoading = false;
     this.searchResults = [];
     this.courses = [];
+    this.contactSubSets = [];
+    this.modalOpen = false;
     this.handleAddCourse = (course) => {
       if (this.courses.find(c => c._id === course._id)) {
         return;
@@ -1278,6 +1320,55 @@ const PioneerProjectApp$1 = class extends H {
   clearSearch() {
     this.handleClearSearch();
   }
+  emailIconClicked(event) {
+    this.handleEmailIconClicked(event);
+  }
+  //listner for button press to toggle modal
+  toggleModal() {
+    this.handleToggleModal();
+  }
+  mouseTrapClick() {
+    this.handleMouseTrapClick();
+  }
+  openEditor() {
+    this.handleOpenEditor();
+  }
+  sendEmail(event) {
+    this.handleSendEmail(event.detail);
+  }
+  handleSendEmail(email) {
+    console.log(email);
+  }
+  handleOpenEditor() {
+    this.modalOpen = true;
+  }
+  handleMouseTrapClick() {
+    this.modalOpen = false;
+  }
+  handleToggleModal() {
+    this.modalOpen = !this.modalOpen;
+  }
+  handleEmailIconClicked(event) {
+    const tagNames = event.composedPath().map((el) => el.tagName);
+    console.log('email icon clicked', event.composedPath(), tagNames);
+    const fromChosenGroups = tagNames.find(tag => tag === 'CHOSEN-GROUPS') ? true : false;
+    const fromContactGroups = tagNames.find(tag => tag === 'CONTACT-GROUPS') ? true : false;
+    if (fromChosenGroups) {
+      this.handleAddToContactGroups(event.detail);
+    }
+    else if (fromContactGroups) {
+      this.handleRemoveFromContactGroups(event.detail);
+    }
+  }
+  handleAddToContactGroups(group) {
+    const alreadyInContactSubSets = this.contactSubSets.find((subset) => subset._id === group._id);
+    if (!alreadyInContactSubSets) {
+      this.contactSubSets = [...this.contactSubSets, group];
+    }
+  }
+  handleRemoveFromContactGroups(group) {
+    this.contactSubSets = this.contactSubSets.filter((subset) => subset._id !== group._id);
+  }
   parseSubSets(newValue) {
     try {
       return JSON.parse(newValue);
@@ -1287,7 +1378,8 @@ const PioneerProjectApp$1 = class extends H {
     }
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("chosen-groups", { "sub-sets": this.parseSubSets(this.subSets) }), h("contact-groups", null)), h("email-modal", null)));
+    console.log('subsets', this.contactSubSets);
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { open: this.modalOpen })));
   }
   static get style() { return pioneerProjectAppCss; }
 };
@@ -1527,16 +1619,77 @@ const SelectedCourses$1 = class extends H {
   static get style() { return selectedCoursesCss; }
 };
 
-const ChosenGroups = /*@__PURE__*/proxyCustomElement(ChosenGroups$1, [1,"chosen-groups",{"courses":[16],"test":[4],"subSets":[16]}]);
-const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"contact-groups"]);
+const subsetCardCss = ":host{display:block}.card{display:flex;align-items:center;justify-content:space-between;width:100%;height:80px;background-color:#fff;border-radius:5px;box-shadow:0px 0px 10px rgba(0, 0, 0, 0.1);margin-bottom:4px;padding:1rem;box-sizing:border-box}.subset_title{font-size:1rem;color:#ed5829;font-family:'Cubano', sans-serif;font-weight:400}.subset_button{background:white;border:none;width:50px;display:flex;justify-content:center;align-items:center;cursor:pointer}.subset_email-icon{height:50px}.subset_email-icon svg{width:30px;height:30px;margin-top:.25rem}.subset_email-icon p{margin:0;font-size:.8rem;font-weight:600;margin-top:-.5rem}";
+
+const SubsetCard$1 = class extends H {
+  constructor() {
+    super();
+    this.__registerHost();
+    this.__attachShadow();
+    this.emailIconClicked = createEvent(this, "emailIconClicked", 7);
+  }
+  emailIconClickedHandler() {
+    this.emailIconClicked.emit(this.group);
+  }
+  renderCard() {
+    const subsetCount = this.group.subsetItems.length;
+    console.log(this.group.subsetItems);
+    return (h("div", { class: "card" }, h("h2", { class: "subset_title" }, this.group.setTitle), h("tool-tip", { tip: "Click to add to your email list", direction: "right" }, h("button", { class: "subset_button", onClick: () => this.emailIconClickedHandler() }, h("div", { class: "subset_email-icon" }, h("svg", { "data-bbox": "20 44.5 160 110.999", viewBox: "0 0 200 200", height: "200", width: "200", xmlns: "http://www.w3.org/2000/svg", "data-type": "shape" }, h("g", null, h("path", { d: "M109.336 104.331a17.481 17.481 0 0 1-18.671 0L20.222 59.784H20v78.442c0 9.54 7.784 17.273 17.386 17.273h125.228c9.602 0 17.386-7.733 17.386-17.273V59.784h-.222l-70.442 44.547z" }), h("path", { d: "M22.578 44.5l.215.125 68.173 43.111a16.917 16.917 0 0 0 18.069 0l68.173-43.111.215-.125H22.578z" }))), h("p", null, subsetCount))))));
+  }
+  render() {
+    return (h(Host, null, this.renderCard()));
+  }
+  static get style() { return subsetCardCss; }
+};
+
+const toolTipCss = ":host{display:block;--tool-tip-width:300px}.tooltip{position:relative;display:inline-block}.tooltip .tooltiptext{visibility:hidden;width:var(--tool-tip-width);background-color:white;color:black;text-align:center;padding:5px 0;border-radius:6px;box-shadow:3px 2px 4px #232323a2;position:absolute;z-index:1}.tooltip:hover .tooltiptext{visibility:visible}.tooltip_right{top:-5px;left:120%}.center_right{top:50%;left:120%;transform:translate(0%, -50%)}.tooltip_right::after{content:\" \";position:absolute;top:50%;right:100%;margin-top:-5px;border-width:5px;border-style:solid;border-color:transparent white transparent transparent}.tooltip_left{top:-5px;right:120%}.tooltip_left::after{content:\" \";position:absolute;top:calc(50% - 5px);left:100%;margin-right:-5px;border-width:5px;border-style:solid;border-color:transparent transparent transparent white}.tooltip_above{bottom:100%;left:50%;margin-left:calc(-1 * calc(var(--tool-tip-width) / 2))}.tooltip_above::after{content:\" \";position:absolute;top:100%;right:50%;margin-right:-5px;border-width:5px;border-style:solid;border-color:white transparent transparent  transparent}.tooltip_below{top:100%;left:50%;margin-left:calc(-1 * calc(var(--tool-tip-width) / 2))}.tooltip_below::after{content:\" \";position:absolute;bottom:100%;left:50%;margin-left:-5px;border-width:5px;border-style:solid;border-color:transparent transparent white transparent}";
+
+const ToolTip$1 = class extends H {
+  constructor() {
+    super();
+    this.__registerHost();
+    this.__attachShadow();
+    this.children = [];
+  }
+  componentWillLoad() {
+    let slotted = this.host.shadowRoot.querySelector('slot');
+    this.children = slotted.assignedNodes().filter(node => {
+      return node.nodeName !== 'text';
+    });
+  }
+  customStyle() {
+    switch (this.direction) {
+      case 'above':
+        return { top: `calc(100% + ${this.margin})` };
+      case 'below':
+        return { bottom: `calc(100% + ${this.margin})` };
+      case 'left':
+        return { right: `calc(120% + ${this.margin})` };
+      case 'right':
+        return { left: `calc(120% + ${this.margin})` };
+      default:
+        return {};
+    }
+  }
+  render() {
+    return (h("div", { class: "tooltip" }, h("slot", null, h("span", null, "no children")), h("span", { style: this.customStyle(), class: 'tooltiptext ' + 'tooltip_' + this.direction }, this.tip)));
+  }
+  get host() { return this; }
+  static get style() { return toolTipCss; }
+};
+
+const ChosenGroups = /*@__PURE__*/proxyCustomElement(ChosenGroups$1, [1,"chosen-groups",{"subSets":[16]}]);
+const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"contact-groups",{"subSets":[16]}]);
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
-const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal"]);
+const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal",{"open":[4],"returnAddress":[32],"message":[32],"name":[32]}]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32],"contactSubSets":[32],"modalOpen":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"],[0,"emailIconClicked","emailIconClicked"],[0,"toggleModal","toggleModal"],[0,"mouseTrapClick","mouseTrapClick"],[0,"openEditor","openEditor"],[0,"sendEmail","sendEmail"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
 const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
 const SelectedCourses = /*@__PURE__*/proxyCustomElement(SelectedCourses$1, [1,"selected-courses",{"courses":[16],"coursesState":[32]}]);
+const SubsetCard = /*@__PURE__*/proxyCustomElement(SubsetCard$1, [1,"subset-card",{"group":[16]}]);
+const ToolTip = /*@__PURE__*/proxyCustomElement(ToolTip$1, [1,"tool-tip",{"tip":[1],"direction":[1],"margin":[1],"children":[32]}]);
 const defineCustomElements = (opts) => {
   if (typeof customElements !== 'undefined') {
     [
@@ -1549,7 +1702,9 @@ const defineCustomElements = (opts) => {
   SearchBar,
   SearchResultRepeater,
   SearchResultRepeaterItem,
-  SelectedCourses
+  SelectedCourses,
+  SubsetCard,
+  ToolTip
     ].forEach(cmp => {
       if (!customElements.get(cmp.is)) {
         customElements.define(cmp.is, cmp, opts);
