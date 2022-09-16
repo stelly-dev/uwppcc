@@ -1275,11 +1275,12 @@ const EmailModal$1 = class extends H {
     };
     this.sendEmailHandler = () => {
       console.log('clicked send email');
+      const recipients = this.el.querySelectorAll('chosen-groups');
       this.sendEmail.emit({
         returnEmail: this.returnAddress,
         message: this.message,
         name: this.name,
-        recipients: this.el.querySelectorAll('chosen-groups'),
+        recipients
       });
     };
     this.clearMessageHandler = () => {
