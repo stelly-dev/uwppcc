@@ -1274,6 +1274,7 @@ const EmailModal$1 = class extends H {
       this.mouseTrapClick.emit(event);
     };
     this.sendEmailHandler = () => {
+      console.log('clicked send email');
       this.sendEmail.emit({
         returnEmail: this.returnAddress,
         message: this.message,
@@ -1741,7 +1742,7 @@ const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"conta
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
 const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal",{"open":[4],"returnAddress":[32],"message":[32],"name":[32]},[[8,"onkeydown","handleKeyDown"]]]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32],"contactSubSets":[32],"modalOpen":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"],[0,"emailIconClicked","emailIconClicked"],[0,"toggleModal","toggleModal"],[0,"mouseTrapClick","mouseTrapClick"],[0,"openEditor","openEditor"],[0,"sendEmail","sendEmail"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"searchResults":[32],"courses":[32],"contactSubSets":[32],"modalOpen":[32]},[[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"],[0,"emailIconClicked","emailIconClicked"],[0,"toggleModal","toggleModal"],[0,"mouseTrapClick","mouseTrapClick"],[0,"openEditor","openEditor"],[0,"send-email","sendEmail"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
 const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
