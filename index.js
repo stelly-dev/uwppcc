@@ -1301,7 +1301,7 @@ const EmailModal$1 = class extends H {
   }
   // used to fire functions after a change in render (caused by prop or attribute change)
   componentDidRender() {
-    this.el.shadowRoot.getElementById('emailInput').focus();
+    // this.el.shadowRoot.getElementById('emailInput').focus()
   }
   connectedCallback() {
     // shows example info only if there's nothing in the form upon opening modal
