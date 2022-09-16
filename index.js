@@ -1260,7 +1260,7 @@ const EmailModal$1 = class extends H {
     this.__registerHost();
     this.__attachShadow();
     this.mouseTrapClick = createEvent(this, "mouseTrapClick", 7);
-    this.sendEmail = createEvent(this, "sendEmail", 7);
+    this.sendEmail = createEvent(this, "send-email", 7);
     this.closeModal = createEvent(this, "closeModal", 7);
     this.returnAddress = '';
     this.message = '';
