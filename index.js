@@ -1274,7 +1274,7 @@ const EmailModal$1 = class extends H {
       this.mouseTrapClick.emit(event);
     };
     this.sendEmailHandler = () => {
-      console.log('clicked send email');
+      console.log('YOU FORGOT THE NAMESPACE');
       this.sendEmail.emit({
         returnEmail: this.returnAddress,
         message: this.message,
