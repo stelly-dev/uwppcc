@@ -1389,7 +1389,10 @@ const PioneerProjectApp$1 = class extends H {
     this.handleSendEmail(event.detail);
   }
   handleSendEmail(email) {
-    const recipients = this.contactSubSets.map((subset) => subset.intersection.map((item) => item.recipient)).flat();
+    // add the contactSubsets intersection recipeients to the email
+    const recipients = this.contactSubSets.map((subset) => subset.intersection.map(x => {
+      return x.recipient;
+    })).flat();
     email.recipients = recipients;
     console.log('email from pp-app', email);
   }
