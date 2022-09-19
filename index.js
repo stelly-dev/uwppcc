@@ -1178,9 +1178,6 @@ const ChosenGroups$1 = class extends H {
     this.__registerHost();
     this.__attachShadow();
   }
-  handleAddGroup(group) {
-    console.log('add group', group);
-  }
   renderItems() {
     return this.subSets.map((group) => {
       return (h("li", { class: "group-list_item" }, h("subset-card", { group: group })));
@@ -1274,7 +1271,6 @@ const EmailModal$1 = class extends H {
       this.mouseTrapClick.emit(event);
     };
     this.sendEmailHandler = () => {
-      console.log('YOU FORGOT THE NAMESPACE');
       this.sendEmail.emit({
         returnEmail: this.returnAddress,
         message: this.message,
@@ -1285,7 +1281,6 @@ const EmailModal$1 = class extends H {
       this.message = '';
     };
     this.handleSpecialKeys = (event) => {
-      console.log(event);
       if (event.key === 'Escape') {
         event.preventDefault();
         this.mouseTrapClick.emit();
@@ -1296,7 +1291,6 @@ const EmailModal$1 = class extends H {
     };
   }
   handleKeyDown(ev) {
-    console.log(ev.key);
     this.handleSpecialKeys(ev);
   }
   // used to fire functions after a change in render (caused by prop or attribute change)
@@ -1395,7 +1389,7 @@ const PioneerProjectApp$1 = class extends H {
     this.handleSendEmail(event.detail);
   }
   handleSendEmail(email) {
-    console.log(email);
+    console.log('email from pp-app', email);
   }
   handleOpenEditor() {
     this.modalOpen = true;
@@ -1408,7 +1402,6 @@ const PioneerProjectApp$1 = class extends H {
   }
   handleEmailIconClicked(event) {
     const tagNames = event.composedPath().map((el) => el.tagName);
-    console.log('email icon clicked', event.composedPath(), tagNames);
     const fromChosenGroups = tagNames.find(tag => tag === 'CHOSEN-GROUPS') ? true : false;
     const fromContactGroups = tagNames.find(tag => tag === 'CONTACT-GROUPS') ? true : false;
     if (fromChosenGroups) {
@@ -1436,7 +1429,6 @@ const PioneerProjectApp$1 = class extends H {
     }
   }
   render() {
-    console.log('subsets', this.contactSubSets);
     return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { open: this.modalOpen })));
   }
   static get style() { return pioneerProjectAppCss; }
@@ -1691,7 +1683,6 @@ const SubsetCard$1 = class extends H {
   }
   renderCard() {
     const subsetCount = this.group.intersection.length;
-    console.log(this.group.subsetItems);
     return (h("div", { class: "card" }, h("h2", { class: "subset_title" }, this.group.setTitle), h("tool-tip", { tip: "Click to add to your email list", direction: "right" }, h("button", { class: "subset_button", onClick: () => this.emailIconClickedHandler() }, h("div", { class: "subset_email-icon" }, h("svg", { "data-bbox": "20 44.5 160 110.999", viewBox: "0 0 200 200", height: "200", width: "200", xmlns: "http://www.w3.org/2000/svg", "data-type": "shape" }, h("g", null, h("path", { d: "M109.336 104.331a17.481 17.481 0 0 1-18.671 0L20.222 59.784H20v78.442c0 9.54 7.784 17.273 17.386 17.273h125.228c9.602 0 17.386-7.733 17.386-17.273V59.784h-.222l-70.442 44.547z" }), h("path", { d: "M22.578 44.5l.215.125 68.173 43.111a16.917 16.917 0 0 0 18.069 0l68.173-43.111.215-.125H22.578z" }))), h("p", null, subsetCount))))));
   }
   render() {
