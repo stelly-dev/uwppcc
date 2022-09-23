@@ -1410,6 +1410,8 @@ const PioneerProjectApp$1 = class extends H {
     const recipients = this.contactSubSets.map((subset) => subset.intersection.map(x => {
       return x.recipient;
     })).flat();
+    const selectedBadges = [];
+    email.selectedBadges = selectedBadges;
     email.recipients = recipients;
     console.log('email from pp-app', email);
   }
@@ -1705,7 +1707,22 @@ const SubsetCard$1 = class extends H {
   }
   renderCard() {
     const subsetCount = this.group.intersection.length;
-    return (h("div", { class: "card" }, h("h2", { class: "subset_title" }, this.group.setTitle), h("tool-tip", { tip: "Click to add to your email list", direction: "right" }, h("button", { class: "subset_button", onClick: () => this.emailIconClickedHandler() }, h("div", { class: "subset_email-icon" }, h("svg", { "data-bbox": "20 44.5 160 110.999", viewBox: "0 0 200 200", height: "200", width: "200", xmlns: "http://www.w3.org/2000/svg", "data-type": "shape" }, h("g", null, h("path", { d: "M109.336 104.331a17.481 17.481 0 0 1-18.671 0L20.222 59.784H20v78.442c0 9.54 7.784 17.273 17.386 17.273h125.228c9.602 0 17.386-7.733 17.386-17.273V59.784h-.222l-70.442 44.547z" }), h("path", { d: "M22.578 44.5l.215.125 68.173 43.111a16.917 16.917 0 0 0 18.069 0l68.173-43.111.215-.125H22.578z" }))), h("p", null, subsetCount))))));
+    return (h("div", { class: "card" }, h("h2", { class: "subset_title" }, this.group.setTitle), h("tool-tip", { tip: "Click to add to your email list", direction: "right" }, h("button", { class: "subset_button", onClick: () => this.emailIconClickedHandler() }, h("div", { class: "subset_email-icon" }, h("svg", { width: "67.874962mm", height: "56.713215mm", viewBox: "0 0 67.874962 56.713215", version: "1.1", id: "svg5", xmlns: "http://www.w3.org/2000/svg" }, h("defs", { id: "defs2" }), h("g", { id: "layer1", transform: "translate(-104.93705,-56.942362)" }, h("rect", { style: {
+        "fill": "#fefefe",
+        "fill-opacity": "1",
+        "stroke": "#000000",
+        "stroke-width": "2.529",
+        "stroke-dasharray": "none"
+      }, id: "rect111", width: "53.528858", x: "106.20155", y: "77.465866", ry: "0", height: "34.925213" }), h("path", {
+      // style="fill:#fefefe;fill-opacity:1;stroke:#010101;stroke-width:1.426;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+      d: "M 113.59784,87.65211 H 152.1203", id: "path8077"
+    }), h("g", { id: "g6511", transform: "translate(-3.3897834,-10.31092)" }, h("path", {
+      // style="fill:#fefefe;fill-opacity:1;stroke:#000000;stroke-width:2.126;stroke-linecap:round;stroke-linejoin:bevel;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+      d: "m 141.23651,102.39849 c -0.24235,-0.16332 -0.37261,-0.47385 -0.30611,-0.72973 0.0221,-0.0852 1.74004,-2.471613 3.81755,-5.303103 2.0775,-2.831488 3.77809,-5.16972 3.77909,-5.196072 9.8e-4,-0.02635 -0.12856,-0.194688 -0.28789,-0.37408 -0.49614,-0.558633 -1.5392,-1.947638 -2.11816,-2.820677 -1.75393,-2.644842 -1.99339,-4.636704 -0.71106,-5.914621 0.87167,-0.868661 1.99946,-1.485403 3.38634,-1.851849 0.74066,-0.195698 2.64529,-0.248418 3.406,-0.09428 0.69901,0.141637 1.04484,0.256228 1.6681,0.552731 l 0.49425,0.235124 2.56812,-2.568123 2.56813,-2.568123 -0.0699,-0.430915 c -0.1012,-0.62375 -0.0867,-1.818007 0.0297,-2.436692 0.30433,-1.618548 1.23337,-3.370035 2.29629,-4.329132 0.26822,-0.242019 0.29501,-0.250722 0.77176,-0.250722 1.40519,0 3.23695,0.670581 4.93775,1.807639 2.08689,1.395174 4.46956,3.777848 5.86473,5.864737 1.13803,1.702253 1.80378,3.514106 1.8066,4.91673 l 0.001,0.521023 -0.31759,0.342179 c -0.97384,1.049275 -2.65173,1.912105 -4.33755,2.23053 -0.58068,0.109679 -1.77775,0.106562 -2.53223,-0.0066 l -0.26743,-0.04011 -2.55601,2.561823 -2.55601,2.561822 0.19155,0.401155 c 0.38549,0.807325 0.60049,1.751973 0.65432,2.874945 0.0897,1.872088 -0.43296,3.687008 -1.45099,5.038038 -1.03296,1.37084 -2.01989,1.72704 -3.64381,1.31509 -1.54085,-0.39086 -2.95418,-1.26875 -5.85371,-3.636 l -0.1933,-0.15781 -0.31913,0.22965 c -0.17552,0.12631 -2.42519,1.77492 -4.99926,3.66358 -2.57408,1.888673 -4.78213,3.503583 -4.90677,3.588713 -0.2859,0.19525 -0.52789,0.19618 -0.81437,0.003 z", id: "path5780"
+    })), h("path", {
+      // style="fill:#fefefe;fill-opacity:1;stroke:#010101;stroke-width:1.426;stroke-linecap:round;stroke-dasharray:none;stroke-opacity:1;paint-order:normal"
+      d: "M 113.59784,99.203481 H 152.1203", id: "path8077-7"
+    }))), h("svg", { "data-bbox": "20 44.5 160 110.999", viewBox: "0 0 200 200", height: "200", width: "200", xmlns: "http://www.w3.org/2000/svg", "data-type": "shape" }, h("g", null, h("path", { d: "M109.336 104.331a17.481 17.481 0 0 1-18.671 0L20.222 59.784H20v78.442c0 9.54 7.784 17.273 17.386 17.273h125.228c9.602 0 17.386-7.733 17.386-17.273V59.784h-.222l-70.442 44.547z" }), h("path", { d: "M22.578 44.5l.215.125 68.173 43.111a16.917 16.917 0 0 0 18.069 0l68.173-43.111.215-.125H22.578z" }))), h("p", null, subsetCount))))));
   }
   render() {
     return (h(Host, null, this.renderCard()));
