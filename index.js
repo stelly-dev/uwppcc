@@ -1189,7 +1189,7 @@ const ChosenGroups$1 = class extends H {
   static get style() { return chosenGroupsCss; }
 };
 
-const contactGroupsCss = ":host{display:block}.group-list_item{list-style:none}.group-list{margin:0;padding:0}.contact-group{padding:0 0 1rem 0;background-color:transparent;border-radius:10px;border:1px solid #eafffd19;position:relative;min-height:60px}.edit-button{position:absolute;top:100%;right:0;transform:translate(-50%, -50%);border-radius:50%;border:none;background-color:#2633a2;fill:white;cursor:pointer;width:50px;height:50px;display:flex;justify-content:center;align-items:center;padding-right:3px;padding-top:3px;transition:all 0.2s ease-in-out}.edit-button:hover{background-color:white;fill:black}.edit-button:active{transform:translate(-50%, -50%) scale(0.9)}.edit-button svg{width:40px;height:40px}.empty-message{text-align:center;font-size:1.5rem;color:#909090a2;font-family:sans-serif;font-size:1.25rem;max-width:80%;margin:0 auto;font-weight:700;padding:1rem}";
+const contactGroupsCss = ":host{display:block}.group-list_item{list-style:none}.group-list{margin:0;padding:0}.contact-group{padding:0 0 1rem 0;background-color:transparent;border-radius:10px;border:1px solid #eafffd19;position:relative;min-height:60px}.edit-button{position:absolute;top:100%;right:0;transform:translate(-50%, -50%);border-radius:50%;border:none;background-color:#2633a2;fill:white;cursor:pointer;width:50px;height:50px;display:flex;justify-content:center;align-items:center;padding-right:3px;padding-top:3px;transition:all 0.2s ease-in-out}.edit-button:hover{background-color:white;fill:black}.edit-button:active{transform:translate(-50%, -50%) scale(0.9)}.edit-button svg{width:40px;height:40px}.empty-message{text-align:center;font-size:1.5rem;color:#eafffd;font-family:sans-serif;font-size:1.25rem;max-width:80%;margin:0 auto;font-weight:700;padding:1rem;opacity:0.24}";
 
 const ContactGroups$1 = class extends H {
   constructor() {
@@ -1371,6 +1371,9 @@ const PioneerProjectApp$1 = class extends H {
     this.contactSubSets = [];
     this.modalOpen = false;
     this.handleAddCourse = (course) => {
+      if (this.courses.length > 4) {
+        return;
+      }
       if (this.courses.find(c => c._id === course._id)) {
         return;
       }
