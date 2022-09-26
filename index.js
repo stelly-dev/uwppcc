@@ -1371,7 +1371,7 @@ const PioneerProjectApp$1 = class extends H {
     this.contactSubSets = [];
     this.modalOpen = false;
     this.handleAddCourse = (course) => {
-      if (this.courses.length > 4) {
+      if (this.courses.length >= 4) {
         return;
       }
       if (this.courses.find(c => c._id === course._id)) {
