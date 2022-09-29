@@ -1415,8 +1415,7 @@ const PioneerProjectApp$1 = class extends H {
     const recipients = this.contactSubSets.map((subset) => subset.intersection.map(x => {
       return x.recipient;
     })).flat();
-    const selectedBadges = [];
-    email.selectedBadges = selectedBadges;
+    email.selectedBadges = this.courses;
     email.recipients = recipients;
     console.log('email from pp-app', email);
   }
