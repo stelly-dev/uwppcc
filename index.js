@@ -12389,12 +12389,13 @@ const ToastMessage$1 = class extends H {
     this.show = false;
     this.toastAnimation = 'toast';
   }
-  connectedCallback() {
-    // this.el.shadowRoot.querySelector('.toast').
-    this.show = true;
-    setTimeout(() => {
-      this.show = false;
-    }, this.duration);
+  openChanged() {
+    if (this.open) {
+      this.show = true;
+      setTimeout(() => {
+        this.show = false;
+      }, this.duration);
+    }
   }
   renderCheckmark() {
     // circle checkmark svg 
@@ -12405,6 +12406,9 @@ const ToastMessage$1 = class extends H {
     return (h("div", { class: this.toastAnimation }, h("div", { class: "toast-message" }, this.renderCheckmark(), h("div", { class: "toast-message__message" }, this.message), this.renderCheckmark())));
   }
   get el() { return this; }
+  static get watchers() { return {
+    "open": ["openChanged"]
+  }; }
   static get style() { return toastMessageCss; }
 };
 
