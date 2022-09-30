@@ -12117,7 +12117,7 @@ const PioneerProjectApp$1 = class extends H {
     }
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { test: this.test, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { finished: this.modalFinished, loader: this.loaderSrc, loading: this.modalLoading, open: this.modalOpen }), h("toast-message", { open: this.showSuccessMessage, duration: 1600, message: "Email Sent!" })));
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { test: this.test, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { finished: this.modalFinished, loader: this.loaderSrc, loading: this.modalLoading, open: this.modalOpen }), h("toast-message", { open: this.showSuccessMessage, duration: 5000, message: "Posting submitted for approval!" })));
   }
   static get style() { return pioneerProjectAppCss; }
 };
@@ -12378,7 +12378,7 @@ const SubsetCard$1 = class extends H {
   static get style() { return subsetCardCss; }
 };
 
-const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);opacity:1;border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem;backface-visibility:none}.appearing{animation:popDown 0.5s ease-in-out forwards}.disappearing{animation:popUp 0.5s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
+const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem}.appearing{animation:popDown 1s ease-in-out forwards}.disappearing{animation:popUp 1s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}@keyframes popDownUp{0%{opacity:0;transform:translate(-50%, -100%)}50%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
 
 const ToastMessage$1 = class extends H {
   constructor() {
@@ -12387,8 +12387,10 @@ const ToastMessage$1 = class extends H {
     this.__attachShadow();
     this.open = false;
     this.show = false;
+    this.toastAnimation = 'toast';
   }
-  connectCallback() {
+  connectedCallback() {
+    // this.el.shadowRoot.querySelector('.toast').
     this.show = true;
     setTimeout(() => {
       this.show = false;
@@ -12399,8 +12401,10 @@ const ToastMessage$1 = class extends H {
     return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 52 52", class: "toast-message__checkmark" }, h("circle", { class: "toast-message__checkmark__circle", cx: "26", cy: "26", r: "25", stroke: "white", "stroke-width": "2", fill: "transparent" }), h("path", { class: "toast-message__checkmark__check", stroke: "white", "stroke-width": "2", fill: "transparent", d: "M14.1 27.2l7.1 7.2 16.7-16.8" })));
   }
   render() {
-    return (h("div", { class: "toast" + this.show ? " appearing" : " disappearing" }, h("div", { class: "toast-message" }, this.renderCheckmark(), h("div", { class: "toast-message__message" }, this.message), this.renderCheckmark())));
+    this.toastAnimation = this.show ? 'toast appearing' : 'toast disappearing';
+    return (h("div", { class: this.toastAnimation }, h("div", { class: "toast-message" }, this.renderCheckmark(), h("div", { class: "toast-message__message" }, this.message), this.renderCheckmark())));
   }
+  get el() { return this; }
   static get style() { return toastMessageCss; }
 };
 
@@ -12451,7 +12455,7 @@ const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeate
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
 const SelectedCourses = /*@__PURE__*/proxyCustomElement(SelectedCourses$1, [1,"selected-courses",{"courses":[16],"test":[4],"coursesState":[32]}]);
 const SubsetCard = /*@__PURE__*/proxyCustomElement(SubsetCard$1, [1,"subset-card",{"group":[16],"actionType":[1,"action-type"]}]);
-const ToastMessage = /*@__PURE__*/proxyCustomElement(ToastMessage$1, [1,"toast-message",{"message":[1],"duration":[2],"open":[4],"show":[32]}]);
+const ToastMessage = /*@__PURE__*/proxyCustomElement(ToastMessage$1, [1,"toast-message",{"message":[1],"duration":[1538],"open":[4],"show":[32],"toastAnimation":[32]}]);
 const ToolTip = /*@__PURE__*/proxyCustomElement(ToolTip$1, [1,"tool-tip",{"tip":[1],"direction":[1],"margin":[1],"children":[32]}]);
 const defineCustomElements = (opts) => {
   if (typeof customElements !== 'undefined') {
