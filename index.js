@@ -1360,6 +1360,9 @@ const EmailModal$1 = class extends H {
         });
         this.loading = true;
       }
+      else {
+        console.log('invalid form');
+      }
     };
     this.clearMessageHandler = () => {
       this.message = '';
