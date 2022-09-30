@@ -12378,7 +12378,7 @@ const SubsetCard$1 = class extends H {
   static get style() { return subsetCardCss; }
 };
 
-const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem}.appearing{animation:popDown 1s ease-in-out forwards}.disappearing{animation:popUp 1s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}@keyframes popDownUp{0%{opacity:0;transform:translate(-50%, -100%)}50%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
+const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem}.appearing{animation:popDown 1s ease-in-out forwards}.disappearing{animation:popUp 1s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
 
 const ToastMessage$1 = class extends H {
   constructor() {
@@ -12394,8 +12394,12 @@ const ToastMessage$1 = class extends H {
       this.show = true;
       setTimeout(() => {
         this.show = false;
+        this.toastAnimation = 'toast';
       }, this.duration);
     }
+  }
+  connectedCallback() {
+    this.toastAnimation = 'toast';
   }
   renderCheckmark() {
     // circle checkmark svg 
