@@ -12378,7 +12378,7 @@ const SubsetCard$1 = class extends H {
   static get style() { return subsetCardCss; }
 };
 
-const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem}.appearing{animation:popDown 1s ease-in-out forwards}.disappearing{animation:popUp 1s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
+const toastMessageCss = ".toast{position:fixed;top:2rem;padding:1rem;background-color:#3db05c;z-index:100;width:calc(980px * 0.85);transform:translate(-50%, 0%);border-radius:0.5rem;margin-top:2rem;color:#fff;font-size:2.2rem;font-weight:500;text-align:center;box-shadow:1px 2px 0.5rem rgba(0, 0, 0, 0.5);font-family:'Roboto', sans-serif;line-height:1rem;opacity:0;}.appearing{animation:popDown 1s ease-in-out forwards}.disappearing{animation:popUp 1s ease-in-out forwards}.toast-message{display:flex;align-items:center;justify-content:space-between;margin:0 auto}.toast-message__checkmark{width:50px;height:50px}@keyframes popDown{0%{opacity:0;transform:translate(-50%, -100%)}100%{opacity:1;transform:translate(-50%, 0%)}}@keyframes popUp{0%{opacity:1;transform:translate(-50%, 0%)}100%{opacity:0;transform:translate(-50%, -100%)}}";
 
 const ToastMessage$1 = class extends H {
   constructor() {
@@ -12392,24 +12392,22 @@ const ToastMessage$1 = class extends H {
   openChanged() {
     if (this.open) {
       this.show = true;
+      this.toastAnimation = 'toast appearing';
       setTimeout(() => {
         this.show = false;
-        this.toastAnimation = 'toast';
+        this.toastAnimation = 'toast disappearing'; // remember kids, don't butter it and strap it to a cat
       }, this.duration);
     }
   }
   connectedCallback() {
-    this.toastAnimation = 'toast';
   }
   renderCheckmark() {
     // circle checkmark svg 
     return (h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 52 52", class: "toast-message__checkmark" }, h("circle", { class: "toast-message__checkmark__circle", cx: "26", cy: "26", r: "25", stroke: "white", "stroke-width": "2", fill: "transparent" }), h("path", { class: "toast-message__checkmark__check", stroke: "white", "stroke-width": "2", fill: "transparent", d: "M14.1 27.2l7.1 7.2 16.7-16.8" })));
   }
   render() {
-    this.toastAnimation = this.show ? 'toast appearing' : 'toast disappearing';
     return (h("div", { class: this.toastAnimation }, h("div", { class: "toast-message" }, this.renderCheckmark(), h("div", { class: "toast-message__message" }, this.message), this.renderCheckmark())));
   }
-  get el() { return this; }
   static get watchers() { return {
     "open": ["openChanged"]
   }; }
