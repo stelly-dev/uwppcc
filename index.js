@@ -1343,7 +1343,8 @@ const EmailModal$1 = class extends H {
       this.mouseTrapClick.emit(event);
     };
     this.sendEmailHandler = () => {
-      const isValid = this.el.getElementById('form').checkValidity();
+      // stencil form validation as a constant named isValid
+      const isValid = this.el.checkValidity();
       if (isValid) {
         this.sendEmail.emit({
           message: this.message,
