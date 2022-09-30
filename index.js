@@ -1343,9 +1343,9 @@ const EmailModal$1 = class extends H {
       this.mouseTrapClick.emit(event);
     };
     this.sendEmailHandler = () => {
-      // loop through the form and check if any fields are empty
-      const isValid = this.el.closest('form').checkValidity();
-      if (isValid) {
+      // log out the children of this.el
+      console.log(this.el.children);
+      {
         this.sendEmail.emit({
           message: this.message,
           employerName: this.employerName,
