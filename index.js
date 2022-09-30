@@ -1344,8 +1344,6 @@ const EmailModal$1 = class extends H {
     };
     this.sendEmailHandler = () => {
       // log out the children of this.el
-      console.log('this.el', this.el);
-      console.log('this', this);
       {
         this.sendEmail.emit({
           message: this.message,
@@ -1363,6 +1361,9 @@ const EmailModal$1 = class extends H {
       }
     };
     this.onSubmit = (e) => {
+      console.log('this.el', this.el);
+      console.log('this', this);
+      console.log('e', e.target);
       e.preventDefault();
     };
     this.clearMessageHandler = () => {
