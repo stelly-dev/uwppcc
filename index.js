@@ -305,12 +305,6 @@ const setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags) => {
                 }
             }
         }
-        else if (memberName === 'ref') {
-            // minifier will clean this up
-            if (newValue) {
-                newValue(elm);
-            }
-        }
         else if ((!elm.__lookupSetter__(memberName)) &&
             memberName[0] === 'o' &&
             memberName[1] === 'n') {
@@ -484,7 +478,6 @@ const removeVnodes = (vnodes, startIdx, endIdx, vnode, elm) => {
     for (; startIdx <= endIdx; ++startIdx) {
         if ((vnode = vnodes[startIdx])) {
             elm = vnode.$elm$;
-            callNodeRefs(vnode);
             // remove the vnode's element from the dom
             elm.remove();
         }
@@ -612,12 +605,6 @@ const patch = (oldVNode, newVNode) => {
         // update the text content for the text only vnode
         // and also only if the text is different than before
         elm.data = text;
-    }
-};
-const callNodeRefs = (vNode) => {
-    {
-        vNode.$attrs$ && vNode.$attrs$.ref && vNode.$attrs$.ref(null);
-        vNode.$children$ && vNode.$children$.map(callNodeRefs);
     }
 };
 const renderVdom = (hostRef, renderFnResults) => {
@@ -1327,13 +1314,13 @@ const EmailModal$1 = class extends H {
     this.jobZip = '';
     this.jobCompensation = '';
     this.jobFullTime = false;
-    // Error Handling 
+    // Error Handling
     this.open = false;
     this.finished = false;
     this.loading = false;
     this.renderLoader = () => {
       const loaderSrc = !this.loader ? getAssetPath(`./assets/loading_half.gif`) : this.loader;
-      return (this.loading ? (h("div", { class: "loader" }, h("img", { src: loaderSrc, class: "loader__loader_top" }), h("img", { src: loaderSrc, class: "loader__loader_bottom" }))) : null);
+      return this.loading ? (h("div", { class: "loader" }, h("img", { src: loaderSrc, class: "loader__loader_top" }), h("img", { src: loaderSrc, class: "loader__loader_bottom" }))) : null;
     };
     this.handleInputChange = (event) => {
       const { name, value } = event.target;
@@ -1342,7 +1329,7 @@ const EmailModal$1 = class extends H {
     this.mouseTrapClickHandler = (event) => {
       this.mouseTrapClick.emit(event);
     };
-    this.onSubmit = (e) => {
+    this.onSubmit = e => {
       // this will only fire if the form is valid
       e.preventDefault();
       this.sendEmail.emit({
@@ -1369,7 +1356,7 @@ const EmailModal$1 = class extends H {
       }
     };
     this.renderModal = () => {
-      return (h(Host, { class: this.open ? "block" : "hidden" }, h("aside", { class: "email-modal" }, h("button", { class: "close-button", onClick: this.mouseTrapClickHandler }, h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", width: "24", height: "24" }, h("path", { fill: "none", d: "M0 0h24v24H0z" }), h("path", { d: "M13.414 12l5.293 5.293-1.414 1.414-5.293-5.293-5.293 5.293-1.414-1.414L10.586 12 5.293 6.707l1.414-1.414L12 10.586l5.293-5.293 1.414 1.414L13.414 12z" }))), h("form", { ref: el => this.el = el, class: "email-form scrollbar", id: "form", onKeyDown: (e) => this.handleSpecialKeys(e), onSubmit: (e) => this.onSubmit(e) }, h("label", { htmlFor: "employerEmail", class: "return-address" }, "Your Email Address*", h("input", { title: "please enter an email of the form a@b.(com/net/etc)", autoFocus: true, id: "emailInput", type: "email", onKeyDown: (e) => this.handleSpecialKeys(e), onChange: (e) => this.handleInputChange(e), name: "employerEmail", value: this.employerEmail, placeholder: "Enter your email address", required: true })), h("label", { htmlFor: "employerName", class: "sender-name" }, "Employer Name*", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "employerName", value: this.employerName, placeholder: "Seasonal Decorations Inc", required: true })), h("label", { htmlFor: 'roleOrTitle', class: "job-role" }, "Job Role or Title*", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "roleOrTitle", value: this.roleOrTitle, placeholder: "3D Ornament designer", required: true })), h("label", { htmlFor: "employerWebsite", class: "employer-website" }, "Website", h("input", { title: "please enter your website using http(s):// (leave blank if no website)", type: "url", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "employerWebsite", value: this.employerWebsite, placeholder: "https://www.seasonaldecorations.com" })), h("label", { htmlFor: "jobCity", class: "job-city" }, "City*", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "jobCity", value: this.jobCity, placeholder: "Gillette", required: true })), h("label", { htmlFor: "jobState", class: "job-state" }, "State*", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "jobState", value: this.jobState, placeholder: "WY", required: true })), h("label", { htmlFor: "jobZip", class: "job-zip" }, "Zip*", h("input", { type: "text", pattern: "[0-9][0-9][0-9][0-9][0-9]", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "jobZip", value: this.jobZip, placeholder: "10001", required: true })), h("label", { htmlFor: "jobCompensation", class: "job-compensation" }, "Compensation*", h("input", { type: "text", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "jobCompensation", value: this.jobCompensation, placeholder: "$15/hr, $30k/yr, etc", required: true })), h("label", { htmlFor: "jobFullTime", class: "job-full-time" }, "Full-Time", h("div", { class: 'checkbox-container' }, h("input", { type: "checkbox", onChange: (e) => this.handleInputChange(e), name: "jobFullTime", checked: this.jobFullTime }), h("div", { class: "knob" }))), h("label", { htmlFor: "message", class: "email-body" }, "Message For Badge Holders*", h("textarea", { class: "scrollbar", onChange: (e) => this.handleInputChange(e), onKeyDown: (e) => this.handleSpecialKeys(e), name: "message", value: this.message, placeholder: 'write you message here', required: true })), h("button", { class: "clear-button", onClick: () => this.clearMessageHandler() }, "Clear"), this.loading ? h("div", { class: "send-button__loading" }, this.renderLoader()) : h("input", { type: "submit", class: "send-button", value: "Send" })), h("div", { class: "guide scrollbar" }, h("h1", null, "Helpful tips"), h("hr", null), h("ul", null, h("li", null, "Be sure to include your email address so that badge holders can respond to you."), h("li", null, "Be sure to include your name so that badge holders know who you are."), h("li", null, "Be sure to include a message so that badge holders know why you are contacting them.")), h("h2", null, "Example:"), h("pre", null, "### Job title ", h("br", null), "   ", "Fabrication Engineer", h("br", null), h("br", null), "### Job Description ", h("br", null), "   ", "We are looking for someone who is interested in ", h("br", null), " ", " ", " working with a wide variety of materials and tools. ", h("br", null), "* Using the workshop tools in AREA 59, ", h("br", null), "   ", "  including: CNC machines, soldering irons, ", h("br", null), "   ", "  (Fusion 360) 3D printers, and glue sticks,", h("br", null), "   ", "  construct seasonal decorations according ", h("br", null), "   ", "  to established specifications, and address ", h("br", null), "   ", "  any emergent issues with specifications ", h("br", null), "   ", "  discovered during the manufacturing process.", h("br", null), "### Additional requirements ", h("br", null), "   ", " ", h("br", null), "   ", "* $13.59/hr up to $21.09/hr ", h("br", null), "   ", "* Gillette, Wy - Full Time (6m probationary period) ", h("br", null), "   ", "* 30-40hrs / week ", h("br", null), "   ", "* U.S. Holidays off, one day per month sick-time ", h("br", null), "   ", "* Must be able to lift 40lbs", h("br", null), "   ", "* Must be able to work with fine details ", h("br", null), "   ", " ", h("br", null), h("br", null), h("br", null), "### About the Company ", h("br", null), "We are a small, family owned business located in Gillette, Wy. We make decorations for the holidays, as well as other seasonal items."))), h("div", { class: "mouse-trap", onClick: (e) => this.mouseTrapClickHandler(e) })));
+      return (h(Host, { class: this.open ? 'block' : 'hidden' }, h("aside", { class: "email-modal" }, h("button", { class: "close-button", onClick: this.mouseTrapClickHandler }, h("svg", { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 24 24", width: "24", height: "24" }, h("path", { fill: "none", d: "M0 0h24v24H0z" }), h("path", { d: "M13.414 12l5.293 5.293-1.414 1.414-5.293-5.293-5.293 5.293-1.414-1.414L10.586 12 5.293 6.707l1.414-1.414L12 10.586l5.293-5.293 1.414 1.414L13.414 12z" }))), h("form", { class: "email-form scrollbar", id: "form", onKeyDown: e => this.handleSpecialKeys(e), onSubmit: e => this.onSubmit(e) }, h("label", { htmlFor: "employerEmail", class: "return-address" }, "Your Email Address*", h("input", { title: "please enter an email of the form a@b.(com/net/etc)", autoFocus: true, id: "emailInput", type: "email", onKeyDown: e => this.handleSpecialKeys(e), onChange: e => this.handleInputChange(e), name: "employerEmail", value: this.employerEmail, placeholder: "Enter your email address", required: true })), h("label", { htmlFor: "employerName", class: "sender-name" }, "Employer Name*", h("input", { type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "employerName", value: this.employerName, placeholder: "Seasonal Decorations Inc", required: true })), h("label", { htmlFor: "roleOrTitle", class: "job-role" }, "Job Role or Title*", h("input", { type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "roleOrTitle", value: this.roleOrTitle, placeholder: "3D Ornament designer", required: true })), h("label", { htmlFor: "employerWebsite", class: "employer-website" }, "Website", h("input", { pattern: "https?://.*", title: "please enter your website using http(s):// (leave blank if no website)", type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "employerWebsite", value: this.employerWebsite, placeholder: "https://www.seasonaldecorations.com" })), h("label", { htmlFor: "jobCity", class: "job-city" }, "City*", h("input", { type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "jobCity", value: this.jobCity, placeholder: "Gillette", required: true })), h("label", { htmlFor: "jobState", class: "job-state" }, "State*", h("input", { type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "jobState", value: this.jobState, placeholder: "WY", required: true })), h("label", { htmlFor: "jobZip", class: "job-zip" }, "Zip*", h("input", { type: "text", pattern: "[0-9][0-9][0-9][0-9][0-9]", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "jobZip", value: this.jobZip, placeholder: "10001", required: true })), h("label", { htmlFor: "jobCompensation", class: "job-compensation" }, "Compensation*", h("input", { type: "text", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "jobCompensation", value: this.jobCompensation, placeholder: "$15/hr, $30k/yr, etc", required: true })), h("label", { htmlFor: "jobFullTime", class: "job-full-time" }, "Full-Time", h("div", { class: "checkbox-container" }, h("input", { type: "checkbox", onChange: e => this.handleInputChange(e), name: "jobFullTime", checked: this.jobFullTime }), h("div", { class: "knob" }))), h("label", { htmlFor: "message", class: "email-body" }, "Message For Badge Holders*", h("textarea", { class: "scrollbar", onChange: e => this.handleInputChange(e), onKeyDown: e => this.handleSpecialKeys(e), name: "message", value: this.message, placeholder: "write you message here", required: true })), h("button", { class: "clear-button", onClick: () => this.clearMessageHandler() }, "Clear"), this.loading ? (h("div", { class: "send-button__loading" }, this.renderLoader())) : (h("input", { type: "submit", class: "send-button", value: "Send" }))), h("div", { class: "guide scrollbar" }, h("h1", null, "Helpful tips"), h("hr", null), h("ul", null, h("li", null, "Be sure to include your email address so that badge holders can respond to you."), h("li", null, "Be sure to include your name so that badge holders know who you are."), h("li", null, "Be sure to include a message so that badge holders know why you are contacting them.")), h("h2", null, "Example:"), h("pre", null, "### Job title ", h("br", null), '   ', "Fabrication Engineer", h("br", null), h("br", null), "### Job Description ", h("br", null), '   ', "We are looking for someone who is interested in ", h("br", null), " working with a wide variety of materials and tools. ", h("br", null), "* Using the workshop tools in AREA 59, ", h("br", null), '   ', " including: CNC machines, soldering irons, ", h("br", null), '   ', " (Fusion 360) 3D printers, and glue sticks,", h("br", null), '   ', " construct seasonal decorations according ", h("br", null), '   ', " to established specifications, and address ", h("br", null), '   ', " any emergent issues with specifications ", h("br", null), '   ', " discovered during the manufacturing process.", h("br", null), "### Additional requirements ", h("br", null), '   ', " ", h("br", null), '   ', "* $13.59/hr up to $21.09/hr ", h("br", null), '   ', "* Gillette, Wy - Full Time (6m probationary period) ", h("br", null), '   ', "* 30-40hrs / week ", h("br", null), '   ', "* U.S. Holidays off, one day per month sick-time ", h("br", null), '   ', "* Must be able to lift 40lbs", h("br", null), '   ', "* Must be able to work with fine details ", h("br", null), '   ', " ", h("br", null), h("br", null), h("br", null), "### About the Company ", h("br", null), "We are a small, family owned business located in Gillette, Wy. We make decorations for the holidays, as well as other seasonal items."))), h("div", { class: "mouse-trap", onClick: e => this.mouseTrapClickHandler(e) })));
     };
   }
   finishedChanged() {
@@ -1404,9 +1391,8 @@ const EmailModal$1 = class extends H {
     }
   }
   render() {
-    return (this.open ? this.renderModal() : h("div", null));
+    return this.open ? this.renderModal() : h("div", null);
   }
-  get el() { return this; }
   static get watchers() { return {
     "finished": ["finishedChanged"]
   }; }
@@ -12021,11 +12007,11 @@ const PioneerProjectApp$1 = class extends H {
     this.test = false;
     this.modalLoading = false;
     this.modalFinished = false;
+    this.showSuccessMessage = false;
     this.searchResults = [];
     this.courses = [];
     this.contactSubSets = [];
     this.modalOpen = false;
-    this.showSuccessMessage = false;
     this.handleAddCourse = (course) => {
       if (this.courses.length >= 4) {
         return;
@@ -12072,11 +12058,13 @@ const PioneerProjectApp$1 = class extends H {
     this.handleSendEmail(event.detail);
   }
   handleSendEmail(email) {
-    // this mutates the emitted 'send-email' event to include recipients, and selectedBadges since these values are only 
+    // this mutates the emitted 'send-email' event to include recipients, and selectedBadges since these values are only
     // available in the parent component (pioneer-project-app)
-    const recipients = this.contactSubSets.map((subset) => subset.intersection.map(x => {
+    const recipients = this.contactSubSets
+      .map((subset) => subset.intersection.map(x => {
       return x.recipient;
-    })).flat();
+    }))
+      .flat();
     email.selectedBadges = this.courses;
     email.recipients = recipients;
   }
@@ -12433,8 +12421,9 @@ const ToolTip$1 = class extends H {
     this.children = [];
   }
   componentWillLoad() {
+    var _a;
     let slotted = this.host.shadowRoot.querySelector('slot');
-    this.children = slotted.assignedNodes().filter(node => {
+    this.children = (_a = slotted === null || slotted === void 0 ? void 0 : slotted.assignedNodes()) === null || _a === void 0 ? void 0 : _a.filter(node => {
       return node.nodeName !== 'text';
     });
   }
@@ -12464,7 +12453,7 @@ const ContactGroups = /*@__PURE__*/proxyCustomElement(ContactGroups$1, [1,"conta
 const CourseCard = /*@__PURE__*/proxyCustomElement(CourseCard$1, [1,"course-card",{"course":[16]}]);
 const EmailModal = /*@__PURE__*/proxyCustomElement(EmailModal$1, [1,"email-modal",{"open":[4],"finished":[1540],"loading":[1540],"loader":[1],"valid":[32],"message":[32],"employerName":[32],"employerEmail":[32],"roleOrTitle":[32],"employerWebsite":[32],"jobCity":[32],"jobState":[32],"jobZip":[32],"jobCompensation":[32],"jobFullTime":[32]},[[8,"onkeydown","handleKeyDown"]]]);
 const GroupCard = /*@__PURE__*/proxyCustomElement(GroupCard$1, [1,"group-card"]);
-const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"test":[4],"modalLoading":[4,"modal-loading"],"modalFinished":[4,"modal-finished"],"searchResults":[32],"courses":[32],"contactSubSets":[32],"modalOpen":[32],"showSuccessMessage":[32]},[[0,"show-success","showSuccess"],[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"],[0,"emailIconClicked","emailIconClicked"],[0,"toggleModal","toggleModal"],[0,"mouseTrapClick","mouseTrapClick"],[0,"openEditor","openEditor"],[0,"send-email","sendEmail"]]]);
+const PioneerProjectApp = /*@__PURE__*/proxyCustomElement(PioneerProjectApp$1, [1,"pioneer-project-app",{"queryResults":[1025,"query-results"],"loaderSrc":[1,"loader-src"],"subSets":[1,"sub-sets"],"searchLoading":[4,"search-loading"],"test":[4],"modalLoading":[4,"modal-loading"],"modalFinished":[4,"modal-finished"],"showSuccessMessage":[4,"show-success-message"],"searchResults":[32],"courses":[32],"contactSubSets":[32],"modalOpen":[32]},[[0,"show-success","showSuccess"],[0,"addCourse","addCourse"],[0,"removeCourse","removeCourse"],[0,"clear-search","clearSearch"],[0,"emailIconClicked","emailIconClicked"],[0,"toggleModal","toggleModal"],[0,"mouseTrapClick","mouseTrapClick"],[0,"openEditor","openEditor"],[0,"send-email","sendEmail"]]]);
 const SearchBar = /*@__PURE__*/proxyCustomElement(SearchBar$1, [1,"search-bar",{"loading":[4],"loader":[1],"query":[32]}]);
 const SearchResultRepeater = /*@__PURE__*/proxyCustomElement(SearchResultRepeater$1, [1,"search-result-repeater",{"badges":[1],"test":[4]}]);
 const SearchResultRepeaterItem = /*@__PURE__*/proxyCustomElement(SearchResultRepeaterItem$1, [1,"search-result-repeater-item",{"badgeData":[16]}]);
