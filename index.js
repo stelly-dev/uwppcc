@@ -49,14 +49,14 @@ const hostListenerProxy = (hostRef, methodName) => (ev) => {
     }
 };
 const getHostListenerTarget = (elm, flags) => {
-    if (flags & 4 /* TargetDocument */)
+    if (flags & 4 /* LISTENER_FLAGS.TargetDocument */)
         return doc;
-    if (flags & 8 /* TargetWindow */)
+    if (flags & 8 /* LISTENER_FLAGS.TargetWindow */)
         return win;
     return elm;
 };
 // prettier-ignore
-const hostListenerOpts = (flags) => (flags & 2 /* Capture */) !== 0;
+const hostListenerOpts = (flags) => (flags & 2 /* LISTENER_FLAGS.Capture */) !== 0;
 const createTime = (fnName, tagName = '') => {
     {
         return () => {
@@ -64,7 +64,7 @@ const createTime = (fnName, tagName = '') => {
         };
     }
 };
-const rootAppliedStyles = new WeakMap();
+const rootAppliedStyles = /*@__PURE__*/ new WeakMap();
 const registerStyle = (scopeId, cssText, allowCS) => {
     let style = styles$1.get(scopeId);
     if (supportsConstructableStylesheets && allowCS) {
@@ -86,7 +86,7 @@ const addStyle = (styleContainerNode, cmpMeta, mode, hostElm) => {
     const style = styles$1.get(scopeId);
     // if an element is NOT connected then getRootNode() will return the wrong root node
     // so the fallback is to always use the document for the root node in those cases
-    styleContainerNode = styleContainerNode.nodeType === 11 /* DocumentFragment */ ? styleContainerNode : doc;
+    styleContainerNode = styleContainerNode.nodeType === 11 /* NODE_TYPE.DocumentFragment */ ? styleContainerNode : doc;
     if (style) {
         if (typeof style === 'string') {
             styleContainerNode = styleContainerNode.head || styleContainerNode;
@@ -120,7 +120,7 @@ const attachStyles = (hostRef) => {
     const flags = cmpMeta.$flags$;
     const endAttachStyles = createTime('attachStyles', cmpMeta.$tagName$);
     const scopeId = addStyle(elm.shadowRoot ? elm.shadowRoot : elm.getRootNode(), cmpMeta);
-    if (flags & 10 /* needsScopedEncapsulation */) {
+    if (flags & 10 /* CMP_FLAGS.needsScopedEncapsulation */) {
         // only required when we're NOT using native shadow dom (slot)
         // or this browser doesn't support native shadow dom
         // and this host element was NOT created with SSR
@@ -372,7 +372,7 @@ const setAccessor = (elm, memberName, oldValue, newValue, isSvg, flags) => {
                     }
                 }
             }
-            else if ((!isProp || flags & 4 /* isHost */ || isSvg) && !isComplex) {
+            else if ((!isProp || flags & 4 /* VNODE_FLAGS.isHost */ || isSvg) && !isComplex) {
                 newValue = newValue === true ? '' : newValue;
                 {
                     elm.setAttribute(memberName, newValue);
@@ -387,7 +387,7 @@ const updateElement = (oldVnode, newVnode, isSvgMode, memberName) => {
     // if the element passed in is a shadow root, which is a document fragment
     // then we want to be adding attrs/props to the shadow root's "host" element
     // if it's not a shadow root, then we add attrs/props to the same element
-    const elm = newVnode.$elm$.nodeType === 11 /* DocumentFragment */ && newVnode.$elm$.host
+    const elm = newVnode.$elm$.nodeType === 11 /* NODE_TYPE.DocumentFragment */ && newVnode.$elm$.host
         ? newVnode.$elm$.host
         : newVnode.$elm$;
     const oldVnodeAttrs = (oldVnode && oldVnode.$attrs$) || EMPTY_OBJ;
@@ -405,6 +405,16 @@ const updateElement = (oldVnode, newVnode, isSvgMode, memberName) => {
         setAccessor(elm, memberName, oldVnodeAttrs[memberName], newVnodeAttrs[memberName], isSvgMode, newVnode.$flags$);
     }
 };
+/**
+ * Create a DOM Node corresponding to one of the children of a given VNode.
+ *
+ * @param oldParentVNode the parent VNode from the previous render
+ * @param newParentVNode the parent VNode from the current render
+ * @param childIndex the index of the VNode, in the _new_ parent node's
+ * children, for which we will create a new DOM node
+ * @param parentElm the parent DOM node which our new node will be a child of
+ * @returns the newly created node
+ */
 const createElm = (oldParentVNode, newParentVNode, childIndex, parentElm) => {
     // tslint:disable-next-line: prefer-const
     const newVNode = newParentVNode.$children$[childIndex];
@@ -483,6 +493,74 @@ const removeVnodes = (vnodes, startIdx, endIdx, vnode, elm) => {
         }
     }
 };
+/**
+ * Reconcile the children of a new VNode with the children of an old VNode by
+ * traversing the two collections of children, identifying nodes that are
+ * conserved or changed, calling out to `patch` to make any necessary
+ * updates to the DOM, and rearranging DOM nodes as needed.
+ *
+ * The algorithm for reconciling children works by analyzing two 'windows' onto
+ * the two arrays of children (`oldCh` and `newCh`). We keep track of the
+ * 'windows' by storing start and end indices and references to the
+ * corresponding array entries. Initially the two 'windows' are basically equal
+ * to the entire array, but we progressively narrow the windows until there are
+ * no children left to update by doing the following:
+ *
+ * 1. Skip any `null` entries at the beginning or end of the two arrays, so
+ *    that if we have an initial array like the following we'll end up dealing
+ *    only with a window bounded by the highlighted elements:
+ *
+ *    [null, null, VNode1 , ... , VNode2, null, null]
+ *                 ^^^^^^         ^^^^^^
+ *
+ * 2. Check to see if the elements at the head and tail positions are equal
+ *    across the windows. This will basically detect elements which haven't
+ *    been added, removed, or changed position, i.e. if you had the following
+ *    VNode elements (represented as HTML):
+ *
+ *    oldVNode: `<div><p><span>HEY</span></p></div>`
+ *    newVNode: `<div><p><span>THERE</span></p></div>`
+ *
+ *    Then when comparing the children of the `<div>` tag we check the equality
+ *    of the VNodes corresponding to the `<p>` tags and, since they are the
+ *    same tag in the same position, we'd be able to avoid completely
+ *    re-rendering the subtree under them with a new DOM element and would just
+ *    call out to `patch` to handle reconciling their children and so on.
+ *
+ * 3. Check, for both windows, to see if the element at the beginning of the
+ *    window corresponds to the element at the end of the other window. This is
+ *    a heuristic which will let us identify _some_ situations in which
+ *    elements have changed position, for instance it _should_ detect that the
+ *    children nodes themselves have not changed but merely moved in the
+ *    following example:
+ *
+ *    oldVNode: `<div><element-one /><element-two /></div>`
+ *    newVNode: `<div><element-two /><element-one /></div>`
+ *
+ *    If we find cases like this then we also need to move the concrete DOM
+ *    elements corresponding to the moved children to write the re-order to the
+ *    DOM.
+ *
+ * 4. Finally, if VNodes have the `key` attribute set on them we check for any
+ *    nodes in the old children which have the same key as the first element in
+ *    our window on the new children. If we find such a node we handle calling
+ *    out to `patch`, moving relevant DOM nodes, and so on, in accordance with
+ *    what we find.
+ *
+ * Finally, once we've narrowed our 'windows' to the point that either of them
+ * collapse (i.e. they have length 0) we then handle any remaining VNode
+ * insertion or deletion that needs to happen to get a DOM state that correctly
+ * reflects the new child VNodes. If, for instance, after our window on the old
+ * children has collapsed we still have more nodes on the new children that
+ * we haven't dealt with yet then we need to add them, or if the new children
+ * collapse but we still have unhandled _old_ children then we need to make
+ * sure the corresponding DOM nodes are removed.
+ *
+ * @param parentElm the node into which the parent VNode is rendered
+ * @param oldCh the old children of the parent node
+ * @param newVNode the new VNode which will replace the parent
+ * @param newCh the new children of the parent node
+ */
 const updateChildren = (parentElm, oldCh, newVNode, newCh) => {
     let oldStartIdx = 0;
     let newStartIdx = 0;
@@ -495,7 +573,7 @@ const updateChildren = (parentElm, oldCh, newVNode, newCh) => {
     let node;
     while (oldStartIdx <= oldEndIdx && newStartIdx <= newEndIdx) {
         if (oldStartVnode == null) {
-            // Vnode might have been moved left
+            // VNode might have been moved left
             oldStartVnode = oldCh[++oldStartIdx];
         }
         else if (oldEndVnode == null) {
@@ -508,34 +586,67 @@ const updateChildren = (parentElm, oldCh, newVNode, newCh) => {
             newEndVnode = newCh[--newEndIdx];
         }
         else if (isSameVnode(oldStartVnode, newStartVnode)) {
+            // if the start nodes are the same then we should patch the new VNode
+            // onto the old one, and increment our `newStartIdx` and `oldStartIdx`
+            // indices to reflect that. We don't need to move any DOM Nodes around
+            // since things are matched up in order.
             patch(oldStartVnode, newStartVnode);
             oldStartVnode = oldCh[++oldStartIdx];
             newStartVnode = newCh[++newStartIdx];
         }
         else if (isSameVnode(oldEndVnode, newEndVnode)) {
+            // likewise, if the end nodes are the same we patch new onto old and
+            // decrement our end indices, and also likewise in this case we don't
+            // need to move any DOM Nodes.
             patch(oldEndVnode, newEndVnode);
             oldEndVnode = oldCh[--oldEndIdx];
             newEndVnode = newCh[--newEndIdx];
         }
         else if (isSameVnode(oldStartVnode, newEndVnode)) {
             patch(oldStartVnode, newEndVnode);
+            // We need to move the element for `oldStartVnode` into a position which
+            // will be appropriate for `newEndVnode`. For this we can use
+            // `.insertBefore` and `oldEndVnode.$elm$.nextSibling`. If there is a
+            // sibling for `oldEndVnode.$elm$` then we want to move the DOM node for
+            // `oldStartVnode` between `oldEndVnode` and it's sibling, like so:
+            //
+            // <old-start-node />
+            // <some-intervening-node />
+            // <old-end-node />
+            // <!-- ->              <-- `oldStartVnode.$elm$` should be inserted here
+            // <next-sibling />
+            //
+            // If instead `oldEndVnode.$elm$` has no sibling then we just want to put
+            // the node for `oldStartVnode` at the end of the children of
+            // `parentElm`. Luckily, `Node.nextSibling` will return `null` if there
+            // aren't any siblings, and passing `null` to `Node.insertBefore` will
+            // append it to the children of the parent element.
             parentElm.insertBefore(oldStartVnode.$elm$, oldEndVnode.$elm$.nextSibling);
             oldStartVnode = oldCh[++oldStartIdx];
             newEndVnode = newCh[--newEndIdx];
         }
         else if (isSameVnode(oldEndVnode, newStartVnode)) {
             patch(oldEndVnode, newStartVnode);
+            // We've already checked above if `oldStartVnode` and `newStartVnode` are
+            // the same node, so since we're here we know that they are not. Thus we
+            // can move the element for `oldEndVnode` _before_ the element for
+            // `oldStartVnode`, leaving `oldStartVnode` to be reconciled in the
+            // future.
             parentElm.insertBefore(oldEndVnode.$elm$, oldStartVnode.$elm$);
             oldEndVnode = oldCh[--oldEndIdx];
             newStartVnode = newCh[++newStartIdx];
         }
         else {
             {
-                // new element
+                // We either didn't find an element in the old children that matches
+                // the key of the first new child OR the build is not using `key`
+                // attributes at all. In either case we need to create a new element
+                // for the new node.
                 node = createElm(oldCh && oldCh[newStartIdx], newVNode, newStartIdx);
                 newStartVnode = newCh[++newStartIdx];
             }
             if (node) {
+                // if we created a new node then handle inserting it to the DOM
                 {
                     oldStartVnode.$elm$.parentNode.insertBefore(node, oldStartVnode.$elm$);
                 }
@@ -543,20 +654,49 @@ const updateChildren = (parentElm, oldCh, newVNode, newCh) => {
         }
     }
     if (oldStartIdx > oldEndIdx) {
+        // we have some more new nodes to add which don't match up with old nodes
         addVnodes(parentElm, newCh[newEndIdx + 1] == null ? null : newCh[newEndIdx + 1].$elm$, newVNode, newCh, newStartIdx, newEndIdx);
     }
     else if (newStartIdx > newEndIdx) {
+        // there are nodes in the `oldCh` array which no longer correspond to nodes
+        // in the new array, so lets remove them (which entails cleaning up the
+        // relevant DOM nodes)
         removeVnodes(oldCh, oldStartIdx, oldEndIdx);
     }
 };
-const isSameVnode = (vnode1, vnode2) => {
+/**
+ * Compare two VNodes to determine if they are the same
+ *
+ * **NB**: This function is an equality _heuristic_ based on the available
+ * information set on the two VNodes and can be misleading under certain
+ * circumstances. In particular, if the two nodes do not have `key` attrs
+ * (available under `$key$` on VNodes) then the function falls back on merely
+ * checking that they have the same tag.
+ *
+ * So, in other words, if `key` attrs are not set on VNodes which may be
+ * changing order within a `children` array or something along those lines then
+ * we could obtain a false positive and then have to do needless re-rendering.
+ *
+ * @param leftVNode the first VNode to check
+ * @param rightVNode the second VNode to check
+ * @returns whether they're equal or not
+ */
+const isSameVnode = (leftVNode, rightVNode) => {
     // compare if two vnode to see if they're "technically" the same
     // need to have the same element tag, and same key to be the same
-    if (vnode1.$tag$ === vnode2.$tag$) {
+    if (leftVNode.$tag$ === rightVNode.$tag$) {
         return true;
     }
     return false;
 };
+/**
+ * Handle reconciling an outdated VNode with a new one which corresponds to
+ * it. This function handles flushing updates to the DOM and reconciling the
+ * children of the two nodes (if any).
+ *
+ * @param oldVNode an old VNode whose DOM element and children we want to update
+ * @param newVNode a new VNode representing an updated version of the old one
+ */
 const patch = (oldVNode, newVNode) => {
     const elm = (newVNode.$elm$ = oldVNode.$elm$);
     const oldChildren = oldVNode.$children$;
@@ -569,7 +709,6 @@ const patch = (oldVNode, newVNode) => {
             // only add this to the when the compiler sees we're using an svg somewhere
             isSvgMode = tag === 'svg' ? true : tag === 'foreignObject' ? false : isSvgMode;
         }
-        // element node
         {
             if (tag === 'slot')
                 ;
@@ -582,6 +721,7 @@ const patch = (oldVNode, newVNode) => {
         }
         if (oldChildren !== null && newChildren !== null) {
             // looks like there's child vnodes for both the old and new vnodes
+            // so we need to call `updateChildren` to reconcile them
             updateChildren(elm, oldChildren, newVNode, newChildren);
         }
         else if (newChildren !== null) {
@@ -618,7 +758,7 @@ const renderVdom = (hostRef, renderFnResults) => {
         cmpMeta.$attrsToReflect$.map(([propName, attribute]) => (rootVnode.$attrs$[attribute] = hostElm[propName]));
     }
     rootVnode.$tag$ = null;
-    rootVnode.$flags$ |= 4 /* isHost */;
+    rootVnode.$flags$ |= 4 /* VNODE_FLAGS.isHost */;
     hostRef.$vnode$ = rootVnode;
     rootVnode.$elm$ = oldVNode.$elm$ = (hostElm.shadowRoot || hostElm );
     {
@@ -633,9 +773,9 @@ const createEvent = (ref, name, flags) => {
     return {
         emit: (detail) => {
             return emitEvent(elm, name, {
-                bubbles: !!(flags & 4 /* Bubbles */),
-                composed: !!(flags & 2 /* Composed */),
-                cancelable: !!(flags & 1 /* Cancellable */),
+                bubbles: !!(flags & 4 /* EVENT_FLAGS.Bubbles */),
+                composed: !!(flags & 2 /* EVENT_FLAGS.Composed */),
+                cancelable: !!(flags & 1 /* EVENT_FLAGS.Cancellable */),
                 detail,
             });
         },
@@ -660,10 +800,10 @@ const attachToAncestor = (hostRef, ancestorComponent) => {
 };
 const scheduleUpdate = (hostRef, isInitialLoad) => {
     {
-        hostRef.$flags$ |= 16 /* isQueuedForUpdate */;
+        hostRef.$flags$ |= 16 /* HOST_FLAGS.isQueuedForUpdate */;
     }
-    if (hostRef.$flags$ & 4 /* isWaitingForChildren */) {
-        hostRef.$flags$ |= 512 /* needsRerender */;
+    if (hostRef.$flags$ & 4 /* HOST_FLAGS.isWaitingForChildren */) {
+        hostRef.$flags$ |= 512 /* HOST_FLAGS.needsRerender */;
         return;
     }
     attachToAncestor(hostRef, hostRef.$ancestorComponent$);
@@ -716,7 +856,7 @@ const updateComponent = async (hostRef, instance, isInitialLoad) => {
         }
         else {
             Promise.all(childrenPromises).then(postUpdate);
-            hostRef.$flags$ |= 4 /* isWaitingForChildren */;
+            hostRef.$flags$ |= 4 /* HOST_FLAGS.isWaitingForChildren */;
             childrenPromises.length = 0;
         }
     }
@@ -725,10 +865,10 @@ const callRender = (hostRef, instance, elm) => {
     try {
         instance = instance.render() ;
         {
-            hostRef.$flags$ &= ~16 /* isQueuedForUpdate */;
+            hostRef.$flags$ &= ~16 /* HOST_FLAGS.isQueuedForUpdate */;
         }
         {
-            hostRef.$flags$ |= 2 /* hasRendered */;
+            hostRef.$flags$ |= 2 /* HOST_FLAGS.hasRendered */;
         }
         {
             {
@@ -755,8 +895,8 @@ const postUpdateComponent = (hostRef) => {
     {
         safeCall(instance, 'componentDidRender');
     }
-    if (!(hostRef.$flags$ & 64 /* hasLoadedComponent */)) {
-        hostRef.$flags$ |= 64 /* hasLoadedComponent */;
+    if (!(hostRef.$flags$ & 64 /* HOST_FLAGS.hasLoadedComponent */)) {
+        hostRef.$flags$ |= 64 /* HOST_FLAGS.hasLoadedComponent */;
         {
             // DOM WRITE!
             addHydratedFlag(elm);
@@ -782,10 +922,10 @@ const postUpdateComponent = (hostRef) => {
             hostRef.$onRenderResolve$();
             hostRef.$onRenderResolve$ = undefined;
         }
-        if (hostRef.$flags$ & 512 /* needsRerender */) {
+        if (hostRef.$flags$ & 512 /* HOST_FLAGS.needsRerender */) {
             nextTick(() => scheduleUpdate(hostRef, false));
         }
-        hostRef.$flags$ &= ~(4 /* isWaitingForChildren */ | 512 /* needsRerender */);
+        hostRef.$flags$ &= ~(4 /* HOST_FLAGS.isWaitingForChildren */ | 512 /* HOST_FLAGS.needsRerender */);
     }
     // ( •_•)
     // ( •_•)>⌐■-■
@@ -841,16 +981,16 @@ const addHydratedFlag = (elm) => elm.classList.add('hydrated')
 const parsePropertyValue = (propValue, propType) => {
     // ensure this value is of the correct prop type
     if (propValue != null && !isComplexType(propValue)) {
-        if (propType & 4 /* Boolean */) {
+        if (propType & 4 /* MEMBER_FLAGS.Boolean */) {
             // per the HTML spec, any string value means it is a boolean true value
             // but we'll cheat here and say that the string "false" is the boolean false
             return propValue === 'false' ? false : propValue === '' || !!propValue;
         }
-        if (propType & 2 /* Number */) {
+        if (propType & 2 /* MEMBER_FLAGS.Number */) {
             // force it to be a number
             return parseFloat(propValue);
         }
-        if (propType & 1 /* String */) {
+        if (propType & 1 /* MEMBER_FLAGS.String */) {
             // could have been passed as a number or boolean
             // but we still want it as a string
             return String(propValue);
@@ -880,7 +1020,7 @@ const setValue = (ref, propName, newVal, cmpMeta) => {
         hostRef.$instanceValues$.set(propName, newVal);
         {
             // get an array of method names of watch functions to call
-            if (cmpMeta.$watchers$ && flags & 128 /* isWatchReady */) {
+            if (cmpMeta.$watchers$ && flags & 128 /* HOST_FLAGS.isWatchReady */) {
                 const watchMethods = cmpMeta.$watchers$[propName];
                 if (watchMethods) {
                     // this instance is watching for when this property changed
@@ -895,7 +1035,7 @@ const setValue = (ref, propName, newVal, cmpMeta) => {
                     });
                 }
             }
-            if ((flags & (2 /* hasRendered */ | 16 /* isQueuedForUpdate */)) === 2 /* hasRendered */) {
+            if ((flags & (2 /* HOST_FLAGS.hasRendered */ | 16 /* HOST_FLAGS.isQueuedForUpdate */)) === 2 /* HOST_FLAGS.hasRendered */) {
                 // looks like this value actually changed, so we've got work to do!
                 // but only if we've already rendered, otherwise just chill out
                 // queue that we need to do an update, but don't worry about queuing
@@ -914,8 +1054,8 @@ const proxyComponent = (Cstr, cmpMeta, flags) => {
         const members = Object.entries(cmpMeta.$members$);
         const prototype = Cstr.prototype;
         members.map(([memberName, [memberFlags]]) => {
-            if ((memberFlags & 31 /* Prop */ ||
-                    (memberFlags & 32 /* State */))) {
+            if ((memberFlags & 31 /* MEMBER_FLAGS.Prop */ ||
+                    (memberFlags & 32 /* MEMBER_FLAGS.State */))) {
                 // proxyComponent - prop
                 Object.defineProperty(prototype, memberName, {
                     get() {
@@ -987,11 +1127,11 @@ const proxyComponent = (Cstr, cmpMeta, flags) => {
             // create an array of attributes to observe
             // and also create a map of html attribute name to js property name
             Cstr.observedAttributes = members
-                .filter(([_, m]) => m[0] & 15 /* HasAttribute */) // filter to only keep props that should match attributes
+                .filter(([_, m]) => m[0] & 15 /* MEMBER_FLAGS.HasAttribute */) // filter to only keep props that should match attributes
                 .map(([propName, m]) => {
                 const attrName = m[1] || propName;
                 attrNameToPropName.set(attrName, propName);
-                if (m[0] & 512 /* ReflectAttr */) {
+                if (m[0] & 512 /* MEMBER_FLAGS.ReflectAttr */) {
                     cmpMeta.$attrsToReflect$.push([propName, attrName]);
                 }
                 return attrName;
@@ -1002,15 +1142,15 @@ const proxyComponent = (Cstr, cmpMeta, flags) => {
 };
 const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) => {
     // initializeComponent
-    if ((hostRef.$flags$ & 32 /* hasInitializedComponent */) === 0) {
+    if ((hostRef.$flags$ & 32 /* HOST_FLAGS.hasInitializedComponent */) === 0) {
         {
             // sync constructor component
             Cstr = elm.constructor;
-            hostRef.$flags$ |= 32 /* hasInitializedComponent */;
+            hostRef.$flags$ |= 32 /* HOST_FLAGS.hasInitializedComponent */;
             // wait for the CustomElementRegistry to mark the component as ready before setting `isWatchReady`. Otherwise,
             // watchers may fire prematurely if `customElements.get()`/`customElements.whenDefined()` resolves _before_
             // Stencil has completed instantiating the component.
-            customElements.whenDefined(cmpMeta.$tagName$).then(() => (hostRef.$flags$ |= 128 /* isWatchReady */));
+            customElements.whenDefined(cmpMeta.$tagName$).then(() => (hostRef.$flags$ |= 128 /* HOST_FLAGS.isWatchReady */));
         }
         if (Cstr.style) {
             // this component has styles but we haven't registered them yet
@@ -1018,7 +1158,7 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
             const scopeId = getScopeId(cmpMeta);
             if (!styles$1.has(scopeId)) {
                 const endRegisterStyles = createTime('registerStyles', cmpMeta.$tagName$);
-                registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* shadowDomEncapsulation */));
+                registerStyle(scopeId, style, !!(cmpMeta.$flags$ & 1 /* CMP_FLAGS.shadowDomEncapsulation */));
                 endRegisterStyles();
             }
         }
@@ -1040,13 +1180,13 @@ const initializeComponent = async (elm, hostRef, cmpMeta, hmrVersionId, Cstr) =>
     }
 };
 const connectedCallback = (elm) => {
-    if ((plt.$flags$ & 1 /* isTmpDisconnected */) === 0) {
+    if ((plt.$flags$ & 1 /* PLATFORM_FLAGS.isTmpDisconnected */) === 0) {
         const hostRef = getHostRef(elm);
         const cmpMeta = hostRef.$cmpMeta$;
         const endConnected = createTime('connectedCallback', cmpMeta.$tagName$);
-        if (!(hostRef.$flags$ & 1 /* hasConnected */)) {
+        if (!(hostRef.$flags$ & 1 /* HOST_FLAGS.hasConnected */)) {
             // first time this component has connected
-            hostRef.$flags$ |= 1 /* hasConnected */;
+            hostRef.$flags$ |= 1 /* HOST_FLAGS.hasConnected */;
             {
                 // find the first ancestor component (if there is one) and register
                 // this component as one of the actively loading child components for its ancestor
@@ -1066,7 +1206,7 @@ const connectedCallback = (elm) => {
             // https://developers.google.com/web/fundamentals/web-components/best-practices#lazy-properties
             if (cmpMeta.$members$) {
                 Object.entries(cmpMeta.$members$).map(([memberName, [memberFlags]]) => {
-                    if (memberFlags & 31 /* Prop */ && elm.hasOwnProperty(memberName)) {
+                    if (memberFlags & 31 /* MEMBER_FLAGS.Prop */ && elm.hasOwnProperty(memberName)) {
                         const value = elm[memberName];
                         delete elm[memberName];
                         elm[memberName] = value;
@@ -1087,7 +1227,7 @@ const connectedCallback = (elm) => {
     }
 };
 const disconnectedCallback = (elm) => {
-    if ((plt.$flags$ & 1 /* isTmpDisconnected */) === 0) {
+    if ((plt.$flags$ & 1 /* PLATFORM_FLAGS.isTmpDisconnected */) === 0) {
         const hostRef = getHostRef(elm);
         {
             if (hostRef.$rmListeners$) {
@@ -1146,7 +1286,7 @@ const getAssetPath = (path) => {
 const setAssetPath = (path) => (plt.$resourcesUrl$ = path);
 const setPlatformOptions = (opts) => Object.assign(plt, opts);
 const Fragment = (_, children) => children;
-const hostRefs = new WeakMap();
+const hostRefs = /*@__PURE__*/ new WeakMap();
 const getHostRef = (ref) => hostRefs.get(ref);
 const registerHost = (elm, cmpMeta) => {
     const hostRef = {
@@ -1165,14 +1305,14 @@ const registerHost = (elm, cmpMeta) => {
 };
 const isMemberInElement = (elm, memberName) => memberName in elm;
 const consoleError = (e, el) => (0, console.error)(e, el);
-const styles$1 = new Map();
+const styles$1 = /*@__PURE__*/ new Map();
 const queueDomReads = [];
 const queueDomWrites = [];
 const queueTask = (queue, write) => (cb) => {
     queue.push(cb);
     if (!queuePending) {
         queuePending = true;
-        if (write && plt.$flags$ & 4 /* queueSync */) {
+        if (write && plt.$flags$ & 4 /* PLATFORM_FLAGS.queueSync */) {
             nextTick(flush);
         }
         else {
@@ -11995,7 +12135,7 @@ const testSubSets = () => {
   ];
 };
 
-const pioneerProjectAppCss = ":root{--cap-fill:blue}:host{display:grid;grid-template-columns:1fr 1fr;grid-gap:calc(1rem);grid-template-rows:repeat(auto-fill, minmax(calc(100px + 1rem), 1fr));width:980px;height:100vh;box-sizing:border-box}.section_search{grid-area:1 / 1 / span 8 / span 1;background:#050108;border-radius:15px;padding:1rem}.section_selections{grid-area:1 / 2 / span 8 / span 1;border-radius:15px;padding:0 1rem 1rem 0;display:flex;flex-direction:column}.section_selections>*{margin-bottom:1rem}";
+const pioneerProjectAppCss = ":root{--cap-fill:blue}:host{display:grid;grid-template-columns:1fr 1fr;grid-gap:calc(1rem);grid-template-rows:repeat(auto-fill, minmax(calc(100px + 1rem), 1fr));width:980px;height:100vh;box-sizing:border-box}.section_search{grid-area:1 / 1 / span 8 / span 1;background:#050108;border-radius:15px;padding:1rem}.section_selections{grid-area:1 / 2 / span 8 / span 1;border-radius:15px;padding:0 1rem 1rem 0;display:flex;flex-direction:column}.section_selections>*{margin-bottom:1rem}.helptext{grid-area:helptext;text-align:center;color:white;font-family:Helvetica, Arial, sans-serif}.helptext a{color:orangered;font-size:0.8rem;cursor:pointer}.helptext a:visited{color:orangered}";
 
 const PioneerProjectApp$1 = class extends H {
   constructor() {
@@ -12114,7 +12254,7 @@ const PioneerProjectApp$1 = class extends H {
     }
   }
   render() {
-    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), h("search-result-repeater", { test: this.test, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { finished: this.modalFinished, loader: this.loaderSrc, loading: this.modalLoading, open: this.modalOpen }), h("toast-message", { open: this.showSuccessMessage, duration: 5000, message: "Posting submitted for approval!" })));
+    return (h(Host, null, h("div", { class: "section_search" }, h("search-bar", { loader: this.loaderSrc, loading: this.searchLoading }), this.searchResults.length > 0 ? null : h("p", { class: "helptext" }, "Not sure what to search for? ", h("br", null), h("a", { href: "https://www.makeraccesspass.com/badges", target: "_blank", rel: "noopener noreferrer" }, "Click here for a list of badges")), h("search-result-repeater", { test: this.test, badges: this.queryResults })), h("div", { class: "section_selections" }, h("selected-courses", { courses: this.courses }), h("contact-groups", { subSets: this.contactSubSets }), h("chosen-groups", { subSets: this.parseSubSets(this.subSets) })), h("email-modal", { finished: this.modalFinished, loader: this.loaderSrc, loading: this.modalLoading, open: this.modalOpen }), h("toast-message", { open: this.showSuccessMessage, duration: 5000, message: "Posting submitted for approval!" })));
   }
   static get style() { return pioneerProjectAppCss; }
 };
